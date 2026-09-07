@@ -151,3 +151,22 @@ function mytheme_contact_message_column_content( $column, $post_id ) {
 
 }
 add_action( 'manage_contact_message_posts_custom_column', 'mytheme_contact_message_column_content', 10, 2 );
+/**
+ * Custom comment display for single blog posts (avatar + name + time + text).
+ */
+function mytheme_comment_template( $comment, $args, $depth ) {
+	?>
+	<li <?php comment_class( 'single-comment' ); ?> id="comment-<?php comment_ID(); ?>">
+		<div class="single-comment-avatar">
+			<?php echo get_avatar( $comment, 40 ); ?>
+		</div>
+		<div class="single-comment-body">
+			<p class="single-comment-meta">
+				<span class="single-comment-author"><?php comment_author(); ?></span>
+				<span class="single-comment-time"><?php echo esc_html( human_time_diff( get_comment_time( 'U' ), current_time( 'timestamp' ) ) ); ?> ago</span>
+			</p>
+			<p class="single-comment-text"><?php comment_text(); ?></p>
+		</div>
+	</li>
+	<?php
+}
