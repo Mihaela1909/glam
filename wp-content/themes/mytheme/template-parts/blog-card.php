@@ -28,6 +28,12 @@
 			echo esc_html( wp_trim_words( $post_text ? $post_text : get_the_excerpt(), 14 ) );
 			?>
 		</p>
-		<p class="blog-card-date"><?php echo esc_html( get_the_date( 'j.n.Y' ) ); ?></p>
+		<div class="blog-card-footer">
+			<p class="blog-card-date"><?php echo esc_html( get_the_date( 'j.n.Y' ) ); ?></p>
+			<?php $read_time = get_field( 'read_time' ); ?>
+			<?php if ( $read_time ) : ?>
+    		<p class="blog-card-readtime"><?php echo esc_html( $read_time ); ?> Mins Read</p>
+			<?php endif; ?>
+		</div>
 	</div>
 </a>

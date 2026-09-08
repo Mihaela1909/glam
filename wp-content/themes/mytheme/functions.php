@@ -166,7 +166,51 @@ function mytheme_comment_template( $comment, $args, $depth ) {
 				<span class="single-comment-time"><?php echo esc_html( human_time_diff( get_comment_time( 'U' ), current_time( 'timestamp' ) ) ); ?> ago</span>
 			</p>
 			<p class="single-comment-text"><?php comment_text(); ?></p>
+			<?php
+			comment_reply_link( array_merge( $args, array(
+				'depth'     => $depth,
+				'max_depth' => $args['max_depth'],
+				'reply_text' => 'Reply',
+				'before'    => '<p class="single-comment-reply">',
+				'after'     => '</p>',
+			) ) );
+			?>
 		</div>
 	</li>
 	<?php
 }
+/**
+ * AJAX handler: load more blog cards without leaving the page.
+ */
+function mytheme_load_more_posts() {
+	$paged       = isset( $_POST['page'] ) ? absint( $_POST['page'] ) : 1;
+	$current_cat = isset( $_POST['cat'] ) ? absint( $_POST['cat'] ) : 0;
+
+	$query_args = array(
+		'post_type'      => 'post',
+		'posts_per_page' => 6,
+		'paged'          => $paged,
+	);
+	if ( $current_cat > 0 ) {
+		$query_args['cat'] = $current_cat;
+	}
+
+	$blog_query = new WP_Query( $query_args );
+
+	ob_start();
+	if ( $blog_query->have_posts() ) {
+		while ( $blog_query->have_posts() ) {
+			$blog_query->the_post();
+			get_template_part( 'template-parts/blog-card' );
+		}
+		wp_reset_postdata();
+	}
+	$html = ob_get_clean();
+
+	wp_send_json_success( array(
+		'html'     => $html,
+		'has_more' => $paged < $blog_query->max_num_pages,
+	) );
+}
+add_action( 'wp_ajax_mytheme_load_more_posts', 'mytheme_load_more_posts' );
+add_action( 'wp_ajax_nopriv_mytheme_load_more_posts', 'mytheme_load_more_posts' );

@@ -58,10 +58,10 @@
 					$read_time = get_field( 'read_time' );
 					if ( $read_time ) :
 						?>
-						<span class="single-post-readtime"><?php echo esc_html( $read_time ); ?> Mins Read</span>
-					<?php endif; ?>
+					<span class="single-post-readtime"><?php echo esc_html( $read_time ); ?> Mins Read</span>					<?php endif; ?>
 				</div>
 			</div>
+			<hr class="single-post-divider single-post-divider-tight">
 
 			<?php
 			$post_intro = get_field( 'post_intro' );

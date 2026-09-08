@@ -8,6 +8,7 @@ Version: 1.0
 
 
 
+
 body {
 	margin: 0; 
 	font-family: Arial, sans-serif;
@@ -554,7 +555,8 @@ box-shadow: 0 0 20px 4px rgba(249, 219, 232, 0.7);
 	background: #ecdcc7;
 	text-decoration: none;
 	color: inherit;
-	display: block;
+	display: flex;
+	flex-direction: column;
 	box-shadow: 0 4px 8px rgba(48, 2, 23, 0.25);
 	transition: transform 0.2s ease, box-shadow 0.2s ease;
 	overflow: hidden;
@@ -569,6 +571,7 @@ box-shadow: 0 0 20px 4px rgba(249, 219, 232, 0.7);
 	width: 100%;
 	height: 260px;
 	overflow: hidden;
+	flex-shrink: 0;
 }
 
 .blog-card-thumb img {
@@ -580,6 +583,9 @@ box-shadow: 0 0 20px 4px rgba(249, 219, 232, 0.7);
 
 .blog-card-body {
 	padding: 1.25rem;
+	display: flex;
+	flex-direction: column;
+	flex-grow: 1;
 }
 
 .blog-card-body h3 {
@@ -594,7 +600,16 @@ box-shadow: 0 0 20px 4px rgba(249, 219, 232, 0.7);
 	margin: 0 0 0.5rem;
 }
 
-.blog-card-date {
+.blog-card-footer {
+	margin-top: auto;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding-top: 0.5rem;
+}
+
+.blog-card-date,
+.blog-card-readtime {
 	font-size: 0.85rem;
 	color: #888;
 	margin: 0;
@@ -680,16 +695,6 @@ main.single-post {
 	font-size: 1.15rem;
 	color: #7a1f45;
 	margin: 0 0 1rem;
-}
-
-.single-post-meta {
-	display: flex;
-	gap: 1rem;
-	font-size: 0.9rem;
-	color: #888;
-	margin-bottom: 1.5rem;
-	padding-bottom: 1.5rem;
-	border-bottom: 1px solid #ecdcc7;
 }
 
 .single-post-text {
@@ -778,9 +783,21 @@ main.single-post {
 	text-align: right;
 	font-size: 0.85rem;
 	color: #888;
+	display: flex;
+	flex-direction: column;
+	gap: 0.15rem;
 }
-.single-post-meta span {
-	display: block;
+.single-post-meta .single-post-date {
+	font-weight: 700;
+	color: #333;
+}
+.single-post-divider {
+	border: none;
+	border-top: 1px solid #ecdcc7;
+	margin: 1.5rem 0;
+}
+.single-post-divider-tight {
+	margin: 0.75rem 0 1.25rem;
 }
 .single-post-intro {
 	font-size: 0.95rem;
@@ -788,11 +805,6 @@ main.single-post {
 	background: #faf5ee;
 	padding: 1rem 1.25rem;
 	border-radius: 4px;
-}
-.single-post-divider {
-	border: none;
-	border-top: 1px solid #ecdcc7;
-	margin: 1.5rem 0;
 }
 .single-post-text h2 {
 	font-size: 1.4rem;
@@ -896,4 +908,27 @@ main.single-post {
 .filter-dropdown li a.active-filter {
 	font-weight: 700;
 	color: #7a1f45;
+}
+/* ===== Comment replies ===== */
+.single-comment-reply {
+	margin: 0.4rem 0 0;
+}
+.single-comment-reply a {
+	font-size: 0.85rem;
+	font-weight: 600;
+	color: #7a1f45;
+	text-decoration: none;
+}
+.single-comment-reply a:hover {
+	text-decoration: underline;
+}
+.comment-list .children {
+	list-style: none;
+	margin: 1rem 0 0 3.25rem;
+	padding: 0;
+}
+#cancel-comment-reply-link {
+	margin-left: 0.75rem;
+	font-size: 0.85rem;
+	color: #888;
 }

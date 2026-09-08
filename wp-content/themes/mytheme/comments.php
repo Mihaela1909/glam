@@ -17,6 +17,7 @@ if ( post_password_required() ) {
 				'style'      => 'ul',
 				'short_ping' => true,
 				'callback'   => 'mytheme_comment_template',
+				'max_depth'  => 5,
 			) );
 			?>
 		</ul>
