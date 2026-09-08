@@ -18,8 +18,7 @@ $content_id = ! empty( $site_content ) ? $site_content[0]->ID : null;
 			$i++;
 			?>
 			<div class="hero-slide <?php echo $i === 1 ? 'active' : ''; ?>"
-				style="background-image: url('<?php echo esc_url( $slide['slide_image']['url'] ); ?>');">
-				<div class="hero-content hero-content-<?php echo esc_attr( $slide['text_position'] ?: 'center' ); ?>">
+style="background-image: url('<?php echo esc_url( $slide['slide_image']['sizes']['large'] ?? $slide['slide_image']['url'] ); ?>');">				<div class="hero-content hero-content-<?php echo esc_attr( $slide['text_position'] ?: 'center' ); ?>">
 					<h1><?php echo nl2br( esc_html( $slide['slide_heading'] ) ); ?></h1>
 					<div class="hero-buttons">
 						<?php if ( ! empty( $slide['slide_button_text'] ) ) : ?>
@@ -41,8 +40,8 @@ $content_id = ! empty( $site_content ) ? $site_content[0]->ID : null;
 		// Fallback: single static hero if no slides are set up yet
 		?>
 		<div class="hero-slide active" <?php if ( $content_id && get_field( 'hero_image', $content_id ) ) : ?>
-			style="background-image: url('<?php echo esc_url( get_field( 'hero_image', $content_id )['url'] ); ?>');"
-		<?php endif; ?>>
+<?php $hero_img = get_field( 'hero_image', $content_id ); ?>
+style="background-image: url('<?php echo esc_url( $hero_img['sizes']['large'] ?? $hero_img['url'] ); ?>');"		<?php endif; ?>>
 			<div class="hero-content">
 				<h1><?php echo $content_id ? esc_html( get_field( 'hero_headline', $content_id ) ) : 'Everyday glam, made simple'; ?></h1>
 				<div class="hero-buttons">
@@ -97,9 +96,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
 <!-- ============ BRAND MESSAGE ============ -->
 <section class="brand-message">
-	<img class="sparkle sparkle-left" src="<?php echo get_theme_file_uri( 'assets/star.png' ); ?>" alt="">
+	<img class="sparkle sparkle-left" src="<?php echo get_theme_file_uri( 'assets/star.webp' ); ?>" alt="" loading="lazy" width="40" height="40">
 	<p><?php echo $content_id ? nl2br( esc_html( get_field( 'brand_message', $content_id ) ) ) : 'At glam, you can find anything.<br>Whether you are a beginner or a pro, clean or messy.'; ?></p>
-	<img class="sparkle sparkle-right" src="<?php echo get_theme_file_uri( 'assets/star.png' ); ?>" alt="">
+	<img class="sparkle sparkle-right" src="<?php echo get_theme_file_uri( 'assets/star.webp' ); ?>" alt="">
 </section>
 
 <!-- ============ BESTSELLERS ============ -->
@@ -162,7 +161,7 @@ document.addEventListener('DOMContentLoaded', function () {
 							<p class="quote"><?php echo esc_html( get_field( 'quote' ) ); ?></p>
 							<?php if ( $photo ) : ?>
 								<div class="testimonial-photo">
-									<img src="<?php echo esc_url( $photo['url'] ); ?>" alt="">
+									<img src="<?php echo esc_url( $photo['sizes']['medium'] ?? $photo['url'] ); ?>" alt="" loading="lazy" width="400" height="200">
 								</div>
 							<?php endif; ?>
 						</div>

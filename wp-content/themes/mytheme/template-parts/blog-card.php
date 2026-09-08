@@ -4,13 +4,13 @@
 		$post_image = get_field( 'post_image' );
 		if ( $post_image ) :
 			?>
-			<img src="<?php echo esc_url( $post_image['url'] ); ?>" alt="<?php echo esc_attr( $post_image['alt'] ); ?>">
+			<img src="<?php echo esc_url( $post_image['sizes']['medium_large'] ?? $post_image['url'] ); ?>" alt="<?php echo esc_attr( $post_image['alt'] ); ?>" loading="lazy" width="600" height="260">
 			<?php
 		elseif ( has_post_thumbnail() ) :
 			the_post_thumbnail( 'medium_large' );
 		else :
 			?>
-			<img src="<?php echo esc_url( get_theme_file_uri( 'assets/placeholder.png' ) ); ?>" alt="">
+			<img src="<?php echo esc_url( get_theme_file_uri( 'assets/placeholder.png' ) ); ?>" alt="" loading="lazy" width="600" height="260">
 			<?php
 		endif;
 		?>

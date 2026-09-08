@@ -3,7 +3,7 @@
 get_header();
 ?>
 
-<section class="contact-hero" style="background-image: url('<?php echo get_theme_file_uri( 'assets/contact-hero.png' ); ?>');">
+<section class="contact-hero" style="background-image: url('<?php echo get_theme_file_uri( 'assets/contact-hero.webp' ); ?>');">
 	<div class="contact-hero-content">
 		<h1>Have any questions, recommendations or concerns? Get in touch with us through here:</h1>
 	</div>
@@ -59,7 +59,6 @@ get_header();
 			</svg>
 		</a>
 	</div>
-	<img class="sparkle" src="<?php echo get_theme_file_uri( 'assets/star.png' ); ?>" alt="">
-</div>
+	<img class="sparkle" src="<?php echo get_theme_file_uri( 'assets/star.png' ); ?>" alt="" loading="lazy" width="48" height="48"></div>
 
 <?php get_footer(); ?>

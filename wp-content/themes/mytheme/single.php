@@ -16,8 +16,7 @@
 				$post_image = get_field( 'post_image' );
 				if ( $post_image ) :
 					?>
-					<img src="<?php echo esc_url( $post_image['url'] ); ?>" alt="<?php echo esc_attr( $post_image['alt'] ); ?>">
-					<?php
+				<img src="<?php echo esc_url( $post_image['sizes']['large'] ?? $post_image['url'] ); ?>" alt="<?php echo esc_attr( $post_image['alt'] ); ?>" loading="lazy" width="800" height="420">					<?php
 				elseif ( has_post_thumbnail() ) :
 					the_post_thumbnail( 'large' );
 				endif;
@@ -41,8 +40,7 @@
 				?>
 				<div class="single-post-author">
 					<?php if ( $author_avatar ) : ?>
-						<img class="single-post-avatar" src="<?php echo esc_url( $author_avatar['url'] ); ?>" alt="">
-					<?php else : ?>
+					<img class="single-post-avatar" src="<?php echo esc_url( $author_avatar['sizes']['thumbnail'] ?? $author_avatar['url'] ); ?>" alt="" loading="lazy" width="40" height="40">					<?php else : ?>
 						<div class="single-post-avatar single-post-avatar-placeholder"></div>
 					<?php endif; ?>
 					<div>

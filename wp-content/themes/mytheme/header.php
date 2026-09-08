@@ -11,8 +11,7 @@
 	<div class="container">
 		<div class="logo">
 			<a href="<?php echo esc_url( home_url( '/' ) ); ?>">
-				<img src="<?php echo get_theme_file_uri( 'assets/glam.png' ); ?>" alt="Glam" style="height: 40px;">
-			</a>
+		<img src="<?php echo get_theme_file_uri( 'assets/glam.webp' ); ?>" alt="Glam" style="height: 40px;" width="74" height="40">			</a>
 		</div>
 		<nav>
     <ul>
