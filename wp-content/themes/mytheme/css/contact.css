@@ -1,0 +1,97 @@
+/* ===== Contact page ===== */
+
+
+.contact-hero {
+	height: 300px;
+	background-color: #4a0e2e;
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	color: #fff;
+}
+.contact-hero-content h1 {
+	font-size: 1.5rem;
+	max-width: 700px;
+	margin: 0 auto;
+	padding: 0 1.5rem;
+}
+
+.success-message {
+	max-width: 600px;
+	margin: 1.5rem auto 0;
+	padding: 1rem;
+	background: #e6f4ea;
+	color: #256029;
+	text-align: center;
+	border-radius: 6px;
+}
+
+.contact-form-wrap {
+	max-width: 600px;
+	margin: 3rem auto;
+	padding: 0 1.5rem;
+}
+.contact-form {
+	background: #ecdcc7;
+	padding: 2rem;
+	border-radius: 4px;
+}
+.contact-form label {
+	display: block;
+	margin-bottom: 0.4rem;
+	font-weight: 600;
+}
+.contact-form input,
+.contact-form textarea {
+	width: 100%;
+	padding: 0.6rem;
+	border: 1px solid #4a0e2e;
+	border-radius: 2px;
+	font-family: inherit;
+	box-sizing: border-box;
+}
+.contact-form p {
+	margin-bottom: 1.25rem;
+}
+.contact-form-submit {
+	text-align: right;
+	margin-bottom: 0;
+}
+
+.contact-signoff {
+	text-align: center;
+	margin: 2rem auto 3rem;
+}
+.contact-signoff p {
+	display: inline-block;
+	font-size: 1.1rem;
+	margin-right: 0.75rem;
+}
+.contact-icons {
+	display: inline-flex;
+	gap: 0.75rem;
+	vertical-align: middle;
+}
+.contact-icons a {
+	color: #333;
+	display: inline-flex;
+	transition: opacity 0.2s ease;
+}
+.contact-icons a:hover {
+	opacity: 0.6;
+}
+.contact-icons svg {
+	width: 22px;
+	height: 22px;
+}
+.contact-signoff .sparkle {
+	display: block;
+	width: 48px;
+	margin: 1.5rem auto 0;
+}
+
+

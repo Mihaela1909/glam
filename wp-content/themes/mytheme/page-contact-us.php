@@ -59,6 +59,6 @@ get_header();
 			</svg>
 		</a>
 	</div>
-	<img class="sparkle" src="<?php echo get_theme_file_uri( 'assets/star.png' ); ?>" alt="" loading="lazy" width="48" height="48"></div>
+	<img class="sparkle" src="<?php echo get_theme_file_uri( 'assets/Star.webp' ); ?>" alt="" loading="lazy" width="48" height="48"></div>
 
 <?php get_footer(); ?>

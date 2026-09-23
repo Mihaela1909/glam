@@ -1,7 +1,7 @@
 <footer class="site-footer">
 		<div class="container footer-grid">
 			<div class="logo">
-<img src="<?php echo get_theme_file_uri( 'assets/glam.webp' ); ?>" alt="Glam" loading="lazy" width="364" height="196">			</div>
+<img src="<?php echo get_theme_file_uri( 'assets/glam.webp' ); ?>" alt="Glam" loading="lazy" width="106" height="196">			</div>
 			<h4>Customer service</h4>
 			<h4>Information</h4>
 			<h4>Social Media</h4>

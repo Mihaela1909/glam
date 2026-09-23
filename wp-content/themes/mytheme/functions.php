@@ -8,7 +8,23 @@ function mytheme_setup() {
 add_action( 'after_setup_theme', 'mytheme_setup' );
 
 function mytheme_enqueue_assets() {
-	wp_enqueue_style( 'mytheme-style', get_stylesheet_uri() );
+	wp_enqueue_style( 'mytheme-base', get_theme_file_uri( 'css/base.css' ), array(), '1.0' );
+
+	if ( is_front_page() ) {
+		wp_enqueue_style( 'mytheme-front-page', get_theme_file_uri( 'css/front-page.css' ), array( 'mytheme-base' ), '1.0' );
+	}
+
+	if ( is_page( 'contact-us' ) ) {
+		wp_enqueue_style( 'mytheme-contact', get_theme_file_uri( 'css/contact.css' ), array( 'mytheme-base' ), '1.0' );
+	}
+
+	if ( is_page( 'front-blog' ) ) {
+		wp_enqueue_style( 'mytheme-blog-listing', get_theme_file_uri( 'css/blog-listing.css' ), array( 'mytheme-base' ), '1.0' );
+	}
+
+	if ( is_single() ) {
+		wp_enqueue_style( 'mytheme-single-post', get_theme_file_uri( 'css/single-post.css' ), array( 'mytheme-base' ), '1.0' );
+	}
 }
 add_action( 'wp_enqueue_scripts', 'mytheme_enqueue_assets' );
 

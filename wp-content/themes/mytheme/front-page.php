@@ -96,10 +96,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
 <!-- ============ BRAND MESSAGE ============ -->
 <section class="brand-message">
-	<img class="sparkle sparkle-left" src="<?php echo get_theme_file_uri( 'assets/star.webp' ); ?>" alt="" loading="lazy" width="40" height="40">
+	<img class="sparkle sparkle-left" src="<?php echo get_theme_file_uri( 'assets/Star.webp' ); ?>" alt="" loading="lazy" width="40" height="40">
 	<p><?php echo $content_id ? nl2br( esc_html( get_field( 'brand_message', $content_id ) ) ) : 'At glam, you can find anything.<br>Whether you are a beginner or a pro, clean or messy.'; ?></p>
-	<img class="sparkle sparkle-right" src="<?php echo get_theme_file_uri( 'assets/star.webp' ); ?>" alt="">
-</section>
+<img class="sparkle sparkle-right" src="<?php echo get_theme_file_uri( 'assets/Star.webp' ); ?>" alt="" loading="lazy" width="40" height="40"></section>
 
 <!-- ============ BESTSELLERS ============ -->
 <section class="bestsellers">
