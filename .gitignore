@@ -5,6 +5,7 @@
 !.gitignore
 !.github/
 !.github/*.*
+!README.md
 
 # Do not ignore wp-content and everything inside it
 !wp-content/
