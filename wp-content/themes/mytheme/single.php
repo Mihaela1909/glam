@@ -51,7 +51,7 @@
 					</div>
 				</div>
 				<div class="single-post-meta">
-					<span class="single-post-date"><?php echo esc_html( get_the_date( 'M j, Y' ) ); ?></span>
+					<time class="single-post-date" datetime="<?php echo esc_attr( get_the_date( 'c' ) ); ?>"><?php echo esc_html( get_the_date( 'M j, Y' ) ); ?></time>
 					<?php
 					$read_time = get_field( 'read_time' );
 					if ( $read_time ) :

@@ -29,8 +29,7 @@
 			?>
 		</p>
 		<div class="blog-card-footer">
-			<p class="blog-card-date"><?php echo esc_html( get_the_date( 'j.n.Y' ) ); ?></p>
-			<?php $read_time = get_field( 'read_time' ); ?>
+			<p class="blog-card-date"><time datetime="<?php echo esc_attr( get_the_date( 'c' ) ); ?>"><?php echo esc_html( get_the_date( 'j.n.Y' ) ); ?></time></p>			<?php $read_time = get_field( 'read_time' ); ?>
 			<?php if ( $read_time ) : ?>
     		<p class="blog-card-readtime"><?php echo esc_html( $read_time ); ?> Mins Read</p>
 			<?php endif; ?>

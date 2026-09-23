@@ -29,6 +29,114 @@ function mytheme_enqueue_assets() {
 add_action( 'wp_enqueue_scripts', 'mytheme_enqueue_assets' );
 
 /**
+ * ===== SEO: Custom title format =====
+ * Appends brand + keyword context to every page title.
+ */
+function mytheme_custom_title( $title_parts ) {
+	if ( is_front_page() ) {
+		$title_parts['title'] = 'glam — Cruelty-Free Beauty & Skincare, Denmark';
+		unset( $title_parts['site'] );
+	} elseif ( is_page( 'contact-us' ) ) {
+		$title_parts['title'] = 'Contact Us — Cruelty-Free Beauty Support';
+		$title_parts['site'] = 'glam';
+	} elseif ( is_page( 'front-blog' ) ) {
+		$title_parts['title'] = 'Beauty Blog — Tips, Tutorials & Sustainable Makeup';
+		$title_parts['site'] = 'glam';
+	} else {
+		$title_parts['site'] = 'glam';
+	}
+	return $title_parts;
+}
+add_filter( 'document_title_parts', 'mytheme_custom_title' );
+
+/**
+ * ===== SEO: Meta description per page type =====
+ */
+function mytheme_meta_description() {
+	if ( is_front_page() ) {
+		$desc = 'glam is a curated online beauty shop in Denmark offering cruelty-free, sustainable makeup and skincare from trusted, hand-picked brands.';
+	} elseif ( is_page( 'contact-us' ) ) {
+		$desc = 'Get in touch with the glam team — questions, recommendations or feedback about our cruelty-free beauty products. We would love to hear from you.';
+	} elseif ( is_page( 'front-blog' ) ) {
+		$desc = 'Explore beauty tips, tutorials and sustainable makeup guides on the glam blog — everything for your everyday glam routine.';
+	} elseif ( is_singular( 'post' ) ) {
+		$desc = has_excerpt() ? wp_strip_all_tags( get_the_excerpt() ) : wp_trim_words( wp_strip_all_tags( get_the_content() ), 30 );
+	} elseif ( is_singular( 'product' ) ) {
+		$desc = wp_trim_words( wp_strip_all_tags( get_the_content() ), 30 );
+	} else {
+		$desc = get_bloginfo( 'description' );
+	}
+	echo '<meta name="description" content="' . esc_attr( $desc ) . '">' . "\n";
+}
+add_action( 'wp_head', 'mytheme_meta_description', 1 );
+
+/**
+ * ===== SEO: Organization schema (site-wide) =====
+ */
+function mytheme_organization_schema() {
+	$schema = array(
+		'@context' => 'https://schema.org',
+		'@type'    => 'Organization',
+		'name'     => 'glam',
+		'url'      => home_url( '/' ),
+		'logo'     => get_theme_file_uri( 'assets/glam.webp' ),
+		'sameAs'   => array(
+			'https://www.instagram.com/glam_denmark',
+			'https://www.tiktok.com/@glam_denmark',
+		),
+	);
+	echo '<script type="application/ld+json">' . wp_json_encode( $schema ) . '</script>' . "\n";
+}
+add_action( 'wp_head', 'mytheme_organization_schema' );
+
+/**
+ * ===== SEO: Article schema on single blog posts =====
+ */
+function mytheme_article_schema() {
+	if ( ! is_singular( 'post' ) ) {
+		return;
+	}
+	$schema = array(
+		'@context'      => 'https://schema.org',
+		'@type'         => 'Article',
+		'headline'      => get_the_title(),
+		'datePublished' => get_the_date( 'c' ),
+		'dateModified'  => get_the_modified_date( 'c' ),
+		'author'        => array(
+			'@type' => 'Person',
+			'name'  => get_the_author(),
+		),
+	);
+	echo '<script type="application/ld+json">' . wp_json_encode( $schema ) . '</script>' . "\n";
+}
+add_action( 'wp_head', 'mytheme_article_schema' );
+
+/**
+ * ===== SEO: Product schema on single products =====
+ */
+function mytheme_product_schema() {
+	if ( ! is_singular( 'product' ) ) {
+		return;
+	}
+	$price = get_field( 'price' );
+	$schema = array(
+		'@context'    => 'https://schema.org',
+		'@type'       => 'Product',
+		'name'        => get_the_title(),
+		'description' => wp_strip_all_tags( get_the_excerpt() ?: get_the_content() ),
+		'image'       => get_the_post_thumbnail_url( get_the_ID(), 'large' ),
+		'offers'      => array(
+			'@type'         => 'Offer',
+			'priceCurrency' => 'DKK',
+			'price'         => $price ?: '',
+			'availability'  => 'https://schema.org/InStock',
+		),
+	);
+	echo '<script type="application/ld+json">' . wp_json_encode( $schema ) . '</script>' . "\n";
+}
+add_action( 'wp_head', 'mytheme_product_schema' );
+
+/**
  * Testimonial CPT — "What users think" section.
  */
 function mytheme_register_testimonial_cpt() {
