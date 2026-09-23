@@ -147,6 +147,45 @@ add_action( 'admin_post_submit_contact_form', 'playground_handle_contact_form' )
 add_action( 'admin_post_nopriv_submit_contact_form', 'playground_handle_contact_form' );
 
 /**
+ * AJAX: Contact Form Submission 
+ */
+function mytheme_handle_contact_form_ajax() {
+	if ( ! isset( $_POST['contact_nonce'] ) || ! wp_verify_nonce( $_POST['contact_nonce'], 'submit_contact_form' ) ) {
+		wp_send_json_error( array( 'message' => 'Security check failed. Please refresh and try again.' ) );
+	}
+
+	$name    = sanitize_text_field( $_POST['name'] );
+	$email   = sanitize_email( $_POST['email'] );
+	$message = sanitize_textarea_field( $_POST['message'] );
+
+	if ( empty( $name ) || empty( $message ) || ! is_email( $email ) ) {
+		wp_send_json_error( array( 'message' => 'Please fill in all fields with a valid email address.' ) );
+	}
+
+	$postData = array(
+		'post_title'  => $name,
+		'post_status' => 'publish',
+		'post_type'   => 'contact_message',
+	);
+	$postId = wp_insert_post( $postData, true );
+
+	if ( is_wp_error( $postId ) ) {
+		wp_send_json_error( array( 'message' => 'Something went wrong. Please try again.' ) );
+	}
+
+	update_post_meta( $postId, 'email', $email );
+	update_post_meta( $postId, 'message', $message );
+
+	$subject = 'New contact form message from ' . $name;
+	$body    = "Name: $name\nEmail: $email\n\nMessage:\n$message";
+	wp_mail( get_option( 'admin_email' ), $subject, $body );
+
+	wp_send_json_success( array( 'message' => "Thank you for your message! We'll get back to you soon." ) );
+}
+add_action( 'wp_ajax_submit_contact_form_ajax', 'mytheme_handle_contact_form_ajax' );
+add_action( 'wp_ajax_nopriv_submit_contact_form_ajax', 'mytheme_handle_contact_form_ajax' );
+
+/**
  * Add Email and Message columns to the Contact Messages admin list.
  */
 function mytheme_contact_message_columns( $columns ) {

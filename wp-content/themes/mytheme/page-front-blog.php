@@ -11,21 +11,22 @@ $current_cat = isset( $_GET['blog_cat'] ) ? absint( $_GET['blog_cat'] ) : 0;
 	<div class="front-blog-page-header container">
 		<h1>Hottest Trends</h1>
 
-		<div class="blog-filter">
-			<button id="filter-toggle" class="btn filter-btn">Filter &gt;</button>
-			<ul id="filter-list" class="filter-dropdown" hidden>
-				<li><a href="<?php echo esc_url( remove_query_arg( 'blog_cat' ) ); ?>" class="<?php echo $current_cat === 0 ? 'active-filter' : ''; ?>">All</a></li>
-				<?php
-				$categories = get_categories( array( 'hide_empty' => true ) );
-				foreach ( $categories as $cat ) :
-					$filter_url = add_query_arg( 'blog_cat', $cat->term_id );
-					?>
-					<li><a href="<?php echo esc_url( $filter_url ); ?>" class="<?php echo $current_cat === $cat->term_id ? 'active-filter' : ''; ?>"><?php echo esc_html( $cat->name ); ?></a></li>
-					<?php
-				endforeach;
-				?>
-			</ul>
-		</div>
+		<!-- ===== Category filter links (now AJAX targets, no more full-page reload) ===== -->
+<div class="blog-filter">
+	<button id="filter-toggle" class="btn filter-btn">Filter &gt;</button>
+	<ul id="filter-list" class="filter-dropdown" hidden>
+		<li><a href="#" data-cat="0" class="filter-link <?php echo $current_cat === 0 ? 'active-filter' : ''; ?>">All</a></li>
+		<?php
+		$categories = get_categories( array( 'hide_empty' => true ) );
+		foreach ( $categories as $cat ) :
+			?>
+			<li><a href="#" data-cat="<?php echo esc_attr( $cat->term_id ); ?>" class="filter-link <?php echo $current_cat === $cat->term_id ? 'active-filter' : ''; ?>"><?php echo esc_html( $cat->name ); ?></a></li>
+			<?php
+		endforeach;
+		?>
+	</ul>
+</div>
+
 	</div>
 
 	<div id="front-blog-page-grid" class="front-blog-page-grid container">
@@ -62,10 +63,15 @@ $current_cat = isset( $_GET['blog_cat'] ) ? absint( $_GET['blog_cat'] ) : 0;
 	<?php endif; ?>
 </main>
 
+<!-- ===== AJAX: Category filter (replaces grid) + Load more (appends to grid) ===== -->
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 	const toggle = document.getElementById('filter-toggle');
 	const list = document.getElementById('filter-list');
+	const grid = document.getElementById('front-blog-page-grid');
+	const loadMoreBtn = document.getElementById('load-more-btn');
+	const ajaxUrl = '<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>';
+
 	if (toggle && list) {
 		toggle.addEventListener('click', function () {
 			list.hidden = !list.hidden;
@@ -77,37 +83,57 @@ document.addEventListener('DOMContentLoaded', function () {
 		});
 	}
 
-	const loadMoreBtn = document.getElementById('load-more-btn');
-	const grid = document.getElementById('front-blog-page-grid');
-	if (!loadMoreBtn || !grid) return;
-
-	loadMoreBtn.addEventListener('click', function () {
-		const nextPage = parseInt(loadMoreBtn.dataset.page) + 1;
-		const cat = loadMoreBtn.dataset.cat;
-
-		loadMoreBtn.textContent = 'Loading...';
-
+	// Shared fetch function — used by BOTH filter clicks and Load More clicks
+	function fetchPosts(page, cat, replace) {
 		const formData = new FormData();
 		formData.append('action', 'mytheme_load_more_posts');
-		formData.append('page', nextPage);
+		formData.append('page', page);
 		formData.append('cat', cat);
 
-		fetch('<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>', {
-			method: 'POST',
-			body: formData
-		})
+		return fetch(ajaxUrl, { method: 'POST', body: formData })
 			.then(function (res) { return res.json(); })
 			.then(function (response) {
-				if (response.success) {
+				if (!response.success) return;
+				if (replace) {
+					grid.innerHTML = response.data.html || '<p>No blog posts found in this category.</p>';
+				} else {
 					grid.insertAdjacentHTML('beforeend', response.data.html);
-					loadMoreBtn.dataset.page = nextPage;
+				}
+				if (loadMoreBtn) {
+					loadMoreBtn.dataset.page = page;
+					loadMoreBtn.dataset.cat = cat;
+					loadMoreBtn.style.display = response.data.has_more ? '' : 'none';
 					loadMoreBtn.textContent = 'Load more';
-					if (!response.data.has_more) {
-						loadMoreBtn.style.display = 'none';
-					}
 				}
 			});
+	}
+
+	// Category filter clicks — REPLACES grid content
+	document.querySelectorAll('.filter-link').forEach(function (link) {
+		link.addEventListener('click', function (e) {
+			e.preventDefault();
+			const cat = this.dataset.cat;
+
+			document.querySelectorAll('.filter-link').forEach(function (l) { l.classList.remove('active-filter'); });
+			this.classList.add('active-filter');
+			list.hidden = true;
+
+			grid.style.opacity = '0.5';
+			fetchPosts(1, cat, true).then(function () {
+				grid.style.opacity = '1';
+			});
+		});
 	});
+
+	// Load more button — APPENDS to grid content
+	if (loadMoreBtn) {
+		loadMoreBtn.addEventListener('click', function () {
+			const nextPage = parseInt(loadMoreBtn.dataset.page) + 1;
+			const cat = loadMoreBtn.dataset.cat;
+			loadMoreBtn.textContent = 'Loading...';
+			fetchPosts(nextPage, cat, false);
+		});
+	}
 });
 </script>
 

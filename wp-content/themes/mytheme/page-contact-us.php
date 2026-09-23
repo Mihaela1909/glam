@@ -9,12 +9,10 @@ get_header();
 	</div>
 </section>
 
-<?php if ( isset( $_GET['contact_status'] ) && $_GET['contact_status'] === 'success' ) : ?>
-	<div class="success-message">Thank you for your message! We'll get back to you soon.</div>
-<?php endif; ?>
-
+<!-- Contact Form (AJAX-enabled) -->
 <div class="contact-form-wrap">
-	<form class="contact-form" action="<?= esc_url( admin_url( 'admin-post.php' ) ) ?>" method="post">
+	<div id="contact-form-message"></div>
+	<form id="contact-form" class="contact-form" action="<?= esc_url( admin_url( 'admin-post.php' ) ) ?>" method="post">
 		<?php wp_nonce_field( 'submit_contact_form', 'contact_nonce' ); ?>
 		<input type="hidden" name="action" value="submit_contact_form">
 		<input type="hidden" name="redirect_to" value="<?= esc_url( get_permalink() ) ?>">
@@ -36,6 +34,43 @@ get_header();
 		</p>
 	</form>
 </div>
+
+<!-- ===== AJAX: Intercept form submit, send in background, show result inline ===== -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+	const form = document.getElementById('contact-form');
+	const messageBox = document.getElementById('contact-form-message');
+	if (!form) return;
+
+	form.addEventListener('submit', function (e) {
+		e.preventDefault();
+
+		const submitBtn = form.querySelector('button[type="submit"]');
+		submitBtn.textContent = 'Sending...';
+		submitBtn.disabled = true;
+
+		const formData = new FormData(form);
+		formData.set('action', 'submit_contact_form_ajax');
+
+		fetch('<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>', {
+			method: 'POST',
+			body: formData
+		})
+			.then(function (res) { return res.json(); })
+			.then(function (response) {
+				submitBtn.textContent = 'Send';
+				submitBtn.disabled = false;
+
+				if (response.success) {
+					messageBox.innerHTML = '<div class="success-message">' + response.data.message + '</div>';
+					form.reset();
+				} else {
+					messageBox.innerHTML = '<div class="success-message" style="background:#f8d7da; color:#842029;">' + response.data.message + '</div>';
+				}
+			});
+	});
+});
+</script>
 
 <div class="contact-signoff">
 	<p>Sincerely, the glam team.</p>
