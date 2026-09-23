@@ -7,21 +7,24 @@
 </head>
 <body <?php body_class(); ?>>
 
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
 <header class="site-header">
 	<div class="container">
 		<div class="logo">
 			<a href="<?php echo esc_url( home_url( '/' ) ); ?>">
-		<img src="<?php echo get_theme_file_uri( 'assets/glam.webp' ); ?>" alt="Glam" style="height: 40px;" width="74" height="40">			</a>
+				<img src="<?php echo get_theme_file_uri( 'assets/glam.webp' ); ?>" alt="Glam" style="height: 40px;" width="74" height="40">
+			</a>
 		</div>
-		<nav>
-    <ul>
-        <li><a href="<?php echo esc_url( get_post_type_archive_link( 'product' ) ); ?>">Shop</a></li>
-        <li><a href="<?php echo esc_url( get_permalink( get_page_by_path( 'front-blog' ) ) ); ?>">Blog</a></li>
-        <li><a href="#">About</a></li>
-        <li><a href="<?php echo esc_url( get_permalink( get_page_by_path( 'contact-us' ) ) ); ?>">Contact us</a></li>
-        <li><a href="https://sustainability.glamweb.dk" target="_blank" rel="noopener">Sustainability</a></li>
-    </ul>
-</nav>
-		<div class="cart">Cart</div>
+		<nav aria-label="Primary navigation">
+			<ul>
+				<li><a href="<?php echo esc_url( get_post_type_archive_link( 'product' ) ); ?>">Shop</a></li>
+				<li><a href="<?php echo esc_url( get_permalink( get_page_by_path( 'front-blog' ) ) ); ?>">Blog</a></li>
+				<li><a href="#">About</a></li>
+				<li><a href="<?php echo esc_url( get_permalink( get_page_by_path( 'contact-us' ) ) ); ?>">Contact us</a></li>
+				<li><a href="https://sustainability.glamweb.dk" target="_blank" rel="noopener">Sustainability</a></li>
+			</ul>
+		</nav>
+		<button class="cart" type="button" aria-label="View cart">Cart</button>
 	</div>
 </header>

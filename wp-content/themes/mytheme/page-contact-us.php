@@ -1,7 +1,6 @@
-<?php
-/* Template Name: Contact Us */
-get_header();
-?>
+<?php get_header(); ?>
+
+<main id="main-content">
 
 <section class="contact-hero" style="background-image: url('<?php echo get_theme_file_uri( 'assets/contact-hero.webp' ); ?>');">
 	<div class="contact-hero-content">
@@ -95,5 +94,7 @@ document.addEventListener('DOMContentLoaded', function () {
 		</a>
 	</div>
 	<img class="sparkle" src="<?php echo get_theme_file_uri( 'assets/Star.webp' ); ?>" alt="" loading="lazy" width="48" height="48"></div>
+
+</main>
 
 <?php get_footer(); ?>

@@ -8,6 +8,10 @@ $site_content = get_posts( array(
 $content_id = ! empty( $site_content ) ? $site_content[0]->ID : null;
 ?>
 
+<main id="main-content">
+
+<h1 class="visually-hidden">glam — Everyday beauty, made simple</h1>
+
 <!-- ============ HERO CAROUSEL ============ -->
 <section class="hero-carousel">
 	<?php
@@ -19,8 +23,7 @@ $content_id = ! empty( $site_content ) ? $site_content[0]->ID : null;
 			?>
 			<div class="hero-slide <?php echo $i === 1 ? 'active' : ''; ?>"
 style="background-image: url('<?php echo esc_url( $slide['slide_image']['sizes']['large'] ?? $slide['slide_image']['url'] ); ?>');">				<div class="hero-content hero-content-<?php echo esc_attr( $slide['text_position'] ?: 'center' ); ?>">
-					<h1><?php echo nl2br( esc_html( $slide['slide_heading'] ) ); ?></h1>
-					<div class="hero-buttons">
+							<h2><?php echo nl2br( esc_html( $slide['slide_heading'] ) ); ?></h2>					<div class="hero-buttons">
 						<?php if ( ! empty( $slide['slide_button_text'] ) ) : ?>
 							<a class="btn" href="<?php echo esc_url( $slide['slide_button_link'] ); ?>">
 								<?php echo esc_html( $slide['slide_button_text'] ); ?>
@@ -43,8 +46,7 @@ style="background-image: url('<?php echo esc_url( $slide['slide_image']['sizes']
 <?php $hero_img = get_field( 'hero_image', $content_id ); ?>
 style="background-image: url('<?php echo esc_url( $hero_img['sizes']['large'] ?? $hero_img['url'] ); ?>');"		<?php endif; ?>>
 			<div class="hero-content">
-				<h1><?php echo $content_id ? esc_html( get_field( 'hero_headline', $content_id ) ) : 'Everyday glam, made simple'; ?></h1>
-				<div class="hero-buttons">
+					<h2><?php echo $content_id ? esc_html( get_field( 'hero_headline', $content_id ) ) : 'Everyday glam, made simple'; ?></h2>				<div class="hero-buttons">
 					<a class="btn" href="<?php echo $content_id ? esc_url( get_field( 'shop_button_link', $content_id ) ) : '#'; ?>">
 						<?php echo $content_id ? esc_html( get_field( 'shop_button_text', $content_id ) ) : 'Shop now'; ?>
 					</a>
@@ -98,7 +100,8 @@ document.addEventListener('DOMContentLoaded', function () {
 <section class="brand-message">
 	<img class="sparkle sparkle-left" src="<?php echo get_theme_file_uri( 'assets/Star.webp' ); ?>" alt="" loading="lazy" width="40" height="40">
 	<p><?php echo $content_id ? nl2br( esc_html( get_field( 'brand_message', $content_id ) ) ) : 'At glam, you can find anything.<br>Whether you are a beginner or a pro, clean or messy.'; ?></p>
-<img class="sparkle sparkle-right" src="<?php echo get_theme_file_uri( 'assets/Star.webp' ); ?>" alt="" loading="lazy" width="40" height="40"></section>
+	<img class="sparkle sparkle-right" src="<?php echo get_theme_file_uri( 'assets/Star.webp' ); ?>" alt="">
+</section>
 
 <!-- ============ BESTSELLERS ============ -->
 <section class="bestsellers">
@@ -220,5 +223,7 @@ document.addEventListener('DOMContentLoaded', function () {
 	});
 });
 </script>
+
+</main>
 
 <?php get_footer(); ?>

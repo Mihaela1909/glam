@@ -7,11 +7,11 @@ get_header();
 $current_cat = isset( $_GET['blog_cat'] ) ? absint( $_GET['blog_cat'] ) : 0;
 ?>
 
-<main class="page-front-blog">
+<main class="page-front-blog" id="main-content">
 	<div class="front-blog-page-header container">
 		<h1>Hottest Trends</h1>
 
-		<!-- ===== Category filter links (now AJAX targets, no more full-page reload) ===== -->
+		<!-- ===== Category filter links AJAX ===== -->
 <div class="blog-filter">
 	<button id="filter-toggle" class="btn filter-btn">Filter &gt;</button>
 	<ul id="filter-list" class="filter-dropdown" hidden>
