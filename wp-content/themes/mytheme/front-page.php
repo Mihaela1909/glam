@@ -61,7 +61,7 @@ style="background-image: url('<?php echo esc_url( $hero_img['sizes']['large'] ??
 	<?php if ( $slides && count( $slides ) > 1 ) : ?>
 		<div class="hero-dots">
 			<?php for ( $d = 0; $d < count( $slides ); $d++ ) : ?>
-				<span class="hero-dot <?php echo $d === 0 ? 'active' : ''; ?>" data-index="<?php echo $d; ?>"></span>
+				<span class="hero-dot <?php echo $d === 0 ? 'active' : ''; ?>" data-index="<?php echo esc_attr( $d ); ?>"></span>
 			<?php endfor; ?>
 		</div>
 	<?php endif; ?>
