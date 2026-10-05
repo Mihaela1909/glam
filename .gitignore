@@ -16,3 +16,9 @@ wp-content/themes/twenty*/**
 wp-content/themes/index.php
 wp-content/plugins/index.php
 wp-content/uploads/wp-config.php
+
+# Add these lines to .gitignore:
+wp-content/plugins/
+wp-content/updraft/
+wp-content/wflogs/
+*.zip

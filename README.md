@@ -60,3 +60,9 @@ Built and tested using [Local by WP Engine](https://localwp.com/).
 2. Set up a new site in Local, pointing to this theme folder
 3. Activate Secure Custom Fields plugin
 4. Activate "mytheme" under Appearance → Themes
+
+## Required plugins
+- Secure Custom Fields
+- Wordfence
+- UpdraftPlus (or WPvivid)
+- Autoptimize
