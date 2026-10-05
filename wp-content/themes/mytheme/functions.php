@@ -346,6 +346,8 @@ function mytheme_comment_template( $comment, $args, $depth ) {
  * AJAX handler: load more blog cards without leaving the page.
  */
 function mytheme_load_more_posts() {
+	check_ajax_referer( 'mytheme_load_more_posts', 'nonce' );
+
 	$paged       = isset( $_POST['page'] ) ? absint( $_POST['page'] ) : 1;
 	$current_cat = isset( $_POST['cat'] ) ? absint( $_POST['cat'] ) : 0;
 

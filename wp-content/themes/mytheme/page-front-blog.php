@@ -71,6 +71,7 @@ document.addEventListener('DOMContentLoaded', function () {
 	const grid = document.getElementById('front-blog-page-grid');
 	const loadMoreBtn = document.getElementById('load-more-btn');
 	const ajaxUrl = '<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>';
+	const ajaxNonce = '<?php echo esc_js( wp_create_nonce( 'mytheme_load_more_posts' ) ); ?>';
 
 	if (toggle && list) {
 		toggle.addEventListener('click', function () {
@@ -89,6 +90,7 @@ document.addEventListener('DOMContentLoaded', function () {
 		formData.append('action', 'mytheme_load_more_posts');
 		formData.append('page', page);
 		formData.append('cat', cat);
+		formData.append('nonce', ajaxNonce);
 
 		return fetch(ajaxUrl, { method: 'POST', body: formData })
 			.then(function (res) { return res.json(); })
