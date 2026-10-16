@@ -18,13 +18,13 @@
 		</div>
 		<nav aria-label="Primary navigation">
 			<ul>
-				<li><a href="<?php echo esc_url( get_post_type_archive_link( 'product' ) ); ?>">Shop</a></li>
+				<li><a href="<?php echo esc_url( home_url( '/shop/' ) ); ?>">Shop</a></li>
 				<li><a href="<?php echo esc_url( get_permalink( get_page_by_path( 'front-blog' ) ) ); ?>">Blog</a></li>
 				<li><a href="#">About</a></li>
 				<li><a href="<?php echo esc_url( get_permalink( get_page_by_path( 'contact-us' ) ) ); ?>">Contact us</a></li>
 				<li><a href="https://sustainability.glamweb.dk" target="_blank" rel="noopener">Sustainability</a></li>
 			</ul>
 		</nav>
-		<button class="cart" type="button" aria-label="View cart">Cart</button>
+		<a href="<?php echo esc_url( wc_get_cart_url() ); ?>" style="text-decoration: none;">Cart</a>
 	</div>
 </header>

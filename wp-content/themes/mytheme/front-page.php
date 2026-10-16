@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', function () {
 		endif;
 		?>
 	</div>
-	<p class="see-more"><a href="<?php echo esc_url( get_post_type_archive_link( 'product' ) ); ?>">see more &gt;</a></p>
+	<p class="see-more"><a href="<?php echo esc_url( home_url( '/shop/' ) ); ?>">see more &gt;</a></p>
 </section>
 
 <div class="section-divider"></div>
