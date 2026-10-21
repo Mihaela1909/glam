@@ -106,29 +106,7 @@ document.addEventListener('DOMContentLoaded', function () {
 <!-- ============ BESTSELLERS ============ -->
 <section class="bestsellers">
 	<h2>Bestsellers</h2>
-	<div class="product-grid">
-		<?php
-		$bestsellers = new WP_Query( array(
-			'post_type'      => 'product',
-			'posts_per_page' => 4,
-			'orderby'        => 'date',
-		) );
-		if ( $bestsellers->have_posts() ) :
-			while ( $bestsellers->have_posts() ) : $bestsellers->the_post();
-				?>
-				<a class="product-card" href="<?php the_permalink(); ?>">
-					<div class="product-thumb"><?php the_post_thumbnail( 'medium' ); ?></div>
-					<p class="product-name"><?php the_title(); ?></p>
-					<p class="product-price"><?php echo esc_html( get_field( 'price' ) ); ?> kr</p>
-				</a>
-				<?php
-			endwhile;
-			wp_reset_postdata();
-		else :
-			echo '<p>No products yet.</p>';
-		endif;
-		?>
-	</div>
+	<?php echo do_shortcode( '[products limit="4" columns="4" best_selling="true"]' ); ?>
 	<p class="see-more"><a href="<?php echo esc_url( home_url( '/shop/' ) ); ?>">see more &gt;</a></p>
 </section>
 

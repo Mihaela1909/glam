@@ -1,11 +1,20 @@
 <?php get_header() ?>
-<section class="shop-banner">
-    <div class="shop-banner-text">
-        <h1 class="shop-title">Shop all products</h1>
-        <p class="shop-description">Choose from a curated range of makeup, skincare and hair care.</p>
+<?php if ( ! is_product() ) : ?>
+    <section class="shop-banner">
+        <div class="shop-banner-text">
+            <h1 class="shop-title">Shop all products</h1>
+            <p class="shop-description">Choose from a curated range of makeup, skincare and hair care.</p>
+        </div>
+        <img src="<?php echo esc_url( get_theme_file_uri( 'assets/shop-hero.webp' ) ); ?>" alt="shop banner">
+    </section>
+<?php else : ?>
+    <div class="product-breadcrumb">
+        <?php woocommerce_breadcrumb( array(
+            'delimiter' => '<span class="crumb-sep">/</span>',
+            'home'      => '',
+        ) ); ?>
     </div>
-    <img src="<?php echo esc_url(get_theme_file_uri('assets/shop-hero.webp')); ?>" alt="shop banner">
-</section>
+<?php endif; ?>
 <!-- Add a filter to modify the WooCommerce content output and display categories -->
 <div class="shop-layout">
     <?php if (!is_product()): ?>

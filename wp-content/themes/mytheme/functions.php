@@ -9,6 +9,8 @@ add_action( 'after_setup_theme', 'mytheme_setup' );
 
 function mytheme_enable_woocommerce() {
 	add_theme_support( 'woocommerce' );
+	add_theme_support( 'wc-product-gallery-slider' );
+	add_theme_support( 'wc-product-gallery-lightbox' );
 }
 add_action( 'after_setup_theme', 'mytheme_enable_woocommerce' );
 add_filter( 'woocommerce_show_page_title', '__return_false' );
@@ -30,11 +32,103 @@ function mytheme_shop_toolbar_open() {
 function mytheme_shop_toolbar_close() {
 	echo '</div>';
 }
-
+// Reposition the shop toolbar and result count to match the design.
 add_action( 'woocommerce_before_shop_loop', 'mytheme_shop_toolbar_open', 15 );
 add_action( 'woocommerce_before_shop_loop', 'mytheme_shop_toolbar_close', 31 );
 remove_action( 'woocommerce_before_shop_loop', 'woocommerce_result_count', 20 );
 add_action( 'woocommerce_before_shop_loop', 'woocommerce_result_count', 35 );
+
+/**
+ * Single product page: badges, accordion, quantity buttons, related products.
+ */
+
+// Product tags (e.g. "Cruelty-free", "Vegan") as pills above the title.
+function mytheme_product_badges() {
+	$tags = get_the_terms( get_the_ID(), 'product_tag' );
+	if ( empty( $tags ) || is_wp_error( $tags ) ) {
+		return;
+	}
+	echo '<div class="product-badges">';
+	foreach ( $tags as $tag ) {
+		echo '<span class="product-badge product-badge--' . esc_attr( $tag->slug ) . '">' . esc_html( $tag->name ) . '</span>';
+	}
+	echo '</div>';
+}
+add_action( 'woocommerce_single_product_summary', 'mytheme_product_badges', 4 );
+
+// Replace WooCommerce's tabs and SKU/category line with the accordion from the design.
+remove_action( 'woocommerce_single_product_summary', 'woocommerce_template_single_meta', 40 );
+remove_action( 'woocommerce_after_single_product_summary', 'woocommerce_output_product_data_tabs', 10 );
+
+function mytheme_product_accordion() {
+	global $product;
+	$ingredients = $product->get_attribute( 'ingredients' );
+	?>
+	<div class="product-accordion">
+		<details open>
+			<summary>Full description</summary>
+			<?php the_content(); ?>
+		</details>
+		<?php if ( $ingredients ) : ?>
+			<details>
+				<summary>Ingredients</summary>
+				<p><?php echo esc_html( $ingredients ); ?></p>
+			</details>
+		<?php endif; ?>
+		<details>
+			<summary>Shipping &amp; returns</summary>
+			<p>Ships from Denmark in 1-3 working days. Free returns within 30 days.</p>
+		</details>
+	</div>
+	<?php
+}
+add_action( 'woocommerce_single_product_summary', 'mytheme_product_accordion', 45 );
+
+// − and + buttons around the quantity field (also used on the cart page).
+function mytheme_qty_minus() {
+	echo '<button type="button" class="qty-btn" data-step="-1" aria-label="Decrease quantity">−</button>';
+}
+function mytheme_qty_plus() {
+	echo '<button type="button" class="qty-btn" data-step="1" aria-label="Increase quantity">+</button>';
+}
+add_action( 'woocommerce_before_quantity_input_field', 'mytheme_qty_minus' );
+add_action( 'woocommerce_after_quantity_input_field', 'mytheme_qty_plus' );
+
+function mytheme_qty_script() {
+	if ( ! function_exists( 'is_woocommerce' ) || ! ( is_product() || is_cart() ) ) {
+		return;
+	}
+	?>
+	<script>
+	document.addEventListener( 'click', function ( e ) {
+		var btn = e.target.closest( '.qty-btn' );
+		if ( ! btn ) {
+			return;
+		}
+		var input = btn.parentElement.querySelector( '.qty' );
+		var min = parseFloat( input.min ) || 1;
+		var max = parseFloat( input.max ) || Infinity;
+		var value = ( parseFloat( input.value ) || min ) + Number( btn.dataset.step );
+		input.value = Math.min( max, Math.max( min, value ) );
+		input.dispatchEvent( new Event( 'change', { bubbles: true } ) );
+	} );
+	</script>
+	<?php
+}
+add_action( 'wp_footer', 'mytheme_qty_script' );
+
+// "You may also like": 4 products in one row.
+function mytheme_related_products_args( $args ) {
+	$args['posts_per_page'] = 4;
+	$args['columns']        = 4;
+	return $args;
+}
+add_filter( 'woocommerce_output_related_products_args', 'mytheme_related_products_args' );
+
+function mytheme_related_heading() {
+	return 'You may also like';
+}
+add_filter( 'woocommerce_product_related_products_heading', 'mytheme_related_heading' );
 
 function mytheme_enqueue_assets() {
 	wp_enqueue_style( 'mytheme-base', get_theme_file_uri( 'css/base.css' ), array(), '1.0' );
@@ -51,7 +145,8 @@ function mytheme_enqueue_assets() {
 		wp_enqueue_style( 'mytheme-blog-listing', get_theme_file_uri( 'css/blog-listing.css' ), array( 'mytheme-base' ), '1.0' );
 	}
 
-	if ( function_exists( 'is_woocommerce' ) && ( is_woocommerce() || is_cart() || is_checkout() || is_account_page() ) ) {
+	// Shop styles also load on the front page for the Bestsellers product cards.
+	if ( is_front_page() || ( function_exists( 'is_woocommerce' ) && ( is_woocommerce() || is_cart() || is_checkout() || is_account_page() ) ) ) {
 		wp_enqueue_style( 'mytheme-shop', get_theme_file_uri( 'css/shop.css' ), array( 'mytheme-base' ), '1.0' );
 	}
 
@@ -421,3 +516,12 @@ function mytheme_sort_label( $options ) {
 	return $options;
 }
 add_filter( 'woocommerce_catalog_orderby', 'mytheme_sort_label' );
+
+/**
+ * Wrap shop/related product images in a box for the gradient frame.
+ */
+function mytheme_loop_product_thumbnail() {
+	echo '<div class="shop-thumb">' . woocommerce_get_product_thumbnail() . '</div>';
+}
+remove_action( 'woocommerce_before_shop_loop_item_title', 'woocommerce_template_loop_product_thumbnail', 10 );
+add_action( 'woocommerce_before_shop_loop_item_title', 'mytheme_loop_product_thumbnail', 10 );
