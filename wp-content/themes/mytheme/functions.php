@@ -13,6 +13,29 @@ function mytheme_enable_woocommerce() {
 add_action( 'after_setup_theme', 'mytheme_enable_woocommerce' );
 add_filter( 'woocommerce_show_page_title', '__return_false' );
 
+/**
+ * Shop toolbar: search + sort in one row, result count underneath.
+ */
+function mytheme_shop_toolbar_open() {
+	?>
+	<div class="shop-toolbar">
+		<form class="shop-search" action="<?php echo esc_url( home_url( '/' ) ); ?>">
+			<img src="<?php echo esc_url( get_theme_file_uri( 'assets/search.svg' ) ); ?>" alt="">
+			<input type="search" name="s" placeholder="Search..." value="<?php echo esc_attr( get_search_query() ); ?>">
+			<input type="hidden" name="post_type" value="product">
+		</form>
+	<?php
+}
+
+function mytheme_shop_toolbar_close() {
+	echo '</div>';
+}
+
+add_action( 'woocommerce_before_shop_loop', 'mytheme_shop_toolbar_open', 15 );
+add_action( 'woocommerce_before_shop_loop', 'mytheme_shop_toolbar_close', 31 );
+remove_action( 'woocommerce_before_shop_loop', 'woocommerce_result_count', 20 );
+add_action( 'woocommerce_before_shop_loop', 'woocommerce_result_count', 35 );
+
 function mytheme_enqueue_assets() {
 	wp_enqueue_style( 'mytheme-base', get_theme_file_uri( 'css/base.css' ), array(), '1.0' );
 
