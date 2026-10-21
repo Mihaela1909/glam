@@ -147,3 +147,13 @@
 .shop-categories .is-open > .cat-toggle {
     transform: rotate(90deg);
 }
+
+.woocommerce-ordering select {
+    padding: 8px 12px;
+    background-color: #EBB7CE;
+    border:none;
+    text-align: center;
+    font-weight: bold;
+    font-size: 14px;
+    cursor: pointer;
+}

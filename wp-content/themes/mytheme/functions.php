@@ -389,3 +389,12 @@ function mytheme_load_more_posts() {
 }
 add_action( 'wp_ajax_mytheme_load_more_posts', 'mytheme_load_more_posts' );
 add_action( 'wp_ajax_nopriv_mytheme_load_more_posts', 'mytheme_load_more_posts' );
+
+/**
+ * Shorten the "Default sorting" label in the shop sort dropdown.
+ */
+function mytheme_sort_label( $options ) {
+	$options['menu_order'] = 'Sort';
+	return $options;
+}
+add_filter( 'woocommerce_catalog_orderby', 'mytheme_sort_label' );
