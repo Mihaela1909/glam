@@ -11,6 +11,7 @@ function mytheme_enable_woocommerce() {
 	add_theme_support( 'woocommerce' );
 }
 add_action( 'after_setup_theme', 'mytheme_enable_woocommerce' );
+add_filter( 'woocommerce_show_page_title', '__return_false' );
 
 function mytheme_enqueue_assets() {
 	wp_enqueue_style( 'mytheme-base', get_theme_file_uri( 'css/base.css' ), array(), '1.0' );
@@ -25,6 +26,10 @@ function mytheme_enqueue_assets() {
 
 	if ( is_page( 'front-blog' ) ) {
 		wp_enqueue_style( 'mytheme-blog-listing', get_theme_file_uri( 'css/blog-listing.css' ), array( 'mytheme-base' ), '1.0' );
+	}
+
+	if ( function_exists( 'is_woocommerce' ) && ( is_woocommerce() || is_cart() || is_checkout() || is_account_page() ) ) {
+		wp_enqueue_style( 'mytheme-shop', get_theme_file_uri( 'css/shop.css' ), array( 'mytheme-base' ), '1.0' );
 	}
 
 	if ( is_single() ) {

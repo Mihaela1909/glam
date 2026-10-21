@@ -25,6 +25,6 @@
 				<li><a href="https://sustainability.glamweb.dk" target="_blank" rel="noopener">Sustainability</a></li>
 			</ul>
 		</nav>
-		<a href="<?php echo esc_url( wc_get_cart_url() ); ?>" style="text-decoration: none;">Cart</a>
+		<a href="<?php echo esc_url( wc_get_cart_url() ); ?>" class="cart" style="text-decoration: none;">Cart</a>
 	</div>
 </header>
