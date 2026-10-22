@@ -533,7 +533,8 @@
 
 /* WooCommerce notices (e.g. "… has been added to your cart") */
 .woocommerce-message,
-.woocommerce-info {
+.woocommerce-info,
+.woocommerce-error {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -548,17 +549,20 @@
 }
 
 .woocommerce-message::before,
-.woocommerce-info::before {
+.woocommerce-info::before,
+.woocommerce-error::before {
     display: none;
 }
 
 .woocommerce-message::after,
-.woocommerce-info::after {
+.woocommerce-info::after,
+.woocommerce-error::after {
     display: none !important;
 }
 
 .woocommerce-message .button,
-.woocommerce-info .button {
+.woocommerce-info .button,
+.woocommerce-error .button {
     order: 2;
     padding: 8px 20px !important;
     border-radius: 999px !important;

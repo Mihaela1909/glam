@@ -145,6 +145,10 @@ function mytheme_enqueue_assets() {
 		wp_enqueue_style( 'mytheme-blog-listing', get_theme_file_uri( 'css/blog-listing.css' ), array( 'mytheme-base' ), '1.0' );
 	}
 
+	if ( function_exists( 'is_cart' ) && is_cart() ) {
+		wp_enqueue_style( 'mytheme-cart', get_theme_file_uri( 'css/cart.css' ), array( 'mytheme-shop' ), '1.0' );
+	}
+
 	// Shop styles also load on the front page for the Bestsellers product cards.
 	if ( is_front_page() || ( function_exists( 'is_woocommerce' ) && ( is_woocommerce() || is_cart() || is_checkout() || is_account_page() ) ) ) {
 		wp_enqueue_style( 'mytheme-shop', get_theme_file_uri( 'css/shop.css' ), array( 'mytheme-base' ), '1.0' );
@@ -525,3 +529,29 @@ function mytheme_loop_product_thumbnail() {
 }
 remove_action( 'woocommerce_before_shop_loop_item_title', 'woocommerce_template_loop_product_thumbnail', 10 );
 add_action( 'woocommerce_before_shop_loop_item_title', 'mytheme_loop_product_thumbnail', 10 );
+
+/**
+ * Cart: show the coupon field at the top of the cart totals card.
+ */
+function mytheme_cart_totals_coupon() {
+	if ( ! wc_coupons_enabled() ) {
+		return;
+	}
+	?>
+	<h2 class="order-summary-title">Order summary</h2>
+	<form class="cart-coupon" method="post" action="<?php echo esc_url( wc_get_cart_url() ); ?>">
+		<input type="text" name="coupon_code" placeholder="Coupon code">
+		<button type="submit" name="apply_coupon" value="Apply coupon">Apply</button>
+		<?php wp_nonce_field( 'woocommerce-cart', 'woocommerce-cart-nonce' ); ?>
+	</form>
+	<?php
+}
+add_action( 'woocommerce_before_cart_totals', 'mytheme_cart_totals_coupon' );
+
+/**
+ * Cart: info text under the "Proceed to checkout" button.
+ */
+function mytheme_checkout_info() {
+	echo '<p class="checkout-info">Shipping is estimated for Denmark and calculated at checkout.</p>';
+}
+add_action( 'woocommerce_proceed_to_checkout', 'mytheme_checkout_info', 30 );
