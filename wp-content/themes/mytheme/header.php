@@ -23,6 +23,7 @@
 				<li><a href="#">About</a></li>
 				<li><a href="<?php echo esc_url( get_permalink( get_page_by_path( 'contact-us' ) ) ); ?>">Contact us</a></li>
 				<li><a href="https://sustainability.glamweb.dk" target="_blank" rel="noopener">Sustainability</a></li>
+				<li><a href="<?php echo esc_url( wc_get_account_endpoint_url('dashboard') ); ?>">Account</a></li>
 			</ul>
 		</nav>
 		<a href="<?php echo esc_url( wc_get_cart_url() ); ?>" class="cart" style="text-decoration: none;">Cart</a>
