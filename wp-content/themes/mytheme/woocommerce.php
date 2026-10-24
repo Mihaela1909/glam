@@ -1,18 +1,18 @@
 <?php get_header() ?>
-<?php if ( ! is_product() ) : ?>
+<?php if (!is_product()): ?>
     <section class="shop-banner">
         <div class="shop-banner-text">
             <h1 class="shop-title">Shop all products</h1>
             <p class="shop-description">Choose from a curated range of makeup, skincare and hair care.</p>
         </div>
-        <img src="<?php echo esc_url( get_theme_file_uri( 'assets/shop-hero.webp' ) ); ?>" alt="shop banner">
+        <img src="<?php echo esc_url(get_theme_file_uri('assets/shop-hero.webp')); ?>" alt="shop banner">
     </section>
-<?php else : ?>
+<?php else: ?>
     <div class="product-breadcrumb">
-        <?php woocommerce_breadcrumb( array(
+        <?php woocommerce_breadcrumb(array(
             'delimiter' => '<span class="crumb-sep">/</span>',
-            'home'      => '',
-        ) ); ?>
+            'home' => '',
+        )); ?>
     </div>
 <?php endif; ?>
 <!-- Add a filter to modify the WooCommerce content output and display categories -->
@@ -27,6 +27,19 @@
                     'hide_empty' => false,
                     'show_count' => true,
                 )); ?>
+            </ul>
+            <h2>GOOD TO KNOW</h2>
+            <ul>
+                <li>
+                    Can choose from
+                    100% cruelty-free brands
+                </li>
+                <li>
+                    Recyclable packaging
+                </li>
+                <li>
+                    Ships from Denmark
+                </li>
             </ul>
         </aside>
 

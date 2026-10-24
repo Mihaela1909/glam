@@ -61,6 +61,20 @@ function mytheme_product_badges()
 }
 add_action('woocommerce_single_product_summary', 'mytheme_product_badges', 4);
 
+// Product tags as small labels above the name on shop/related/bestseller cards.
+function mytheme_card_badges() {
+	$tags = get_the_terms( get_the_ID(), 'product_tag' );
+	if ( empty( $tags ) || is_wp_error( $tags ) ) {
+		return;
+	}
+	echo '<div class="card-badges">';
+	foreach ( $tags as $tag ) {
+		echo '<span class="card-badge card-badge--' . esc_attr( $tag->slug ) . '">' . esc_html( $tag->name ) . '</span>';
+	}
+	echo '</div>';
+}
+add_action( 'woocommerce_shop_loop_item_title', 'mytheme_card_badges', 5 );
+
 // Replace WooCommerce's tabs and SKU/category line with the accordion from the design.
 remove_action('woocommerce_single_product_summary', 'woocommerce_template_single_meta', 40);
 remove_action('woocommerce_after_single_product_summary', 'woocommerce_output_product_data_tabs', 10);
@@ -593,3 +607,16 @@ function mytheme_checkout_info()
 	echo '<p class="checkout-info">Shipping is estimated for Denmark and calculated at checkout.</p>';
 }
 add_action('woocommerce_proceed_to_checkout', 'mytheme_checkout_info', 30);
+
+/**
+ * Shop loop: show "Add" on every product card button.
+ * Out-of-stock products keep WooCommerce's "Read more" label.
+ */
+function mytheme_loop_add_to_cart_text($text, $product)
+{
+	if ($product->is_purchasable() && $product->is_in_stock()) {
+		return 'Add';
+	}
+	return $text;
+}
+add_filter('woocommerce_product_add_to_cart_text', 'mytheme_loop_add_to_cart_text', 10, 2);
