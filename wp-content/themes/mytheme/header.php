@@ -27,5 +27,9 @@
 			</ul>
 		</nav>
 		<a href="<?php echo esc_url( wc_get_cart_url() ); ?>" class="cart" style="text-decoration: none;">Cart</a>
+		<div class="header-lang">
+			<a href="#">DK</a> /
+			<a href="#">DE</a>
+		</div>
 	</div>
 </header>
