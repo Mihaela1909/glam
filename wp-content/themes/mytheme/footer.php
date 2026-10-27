@@ -15,7 +15,7 @@
 		<div class="footer-col footer-col-2">
 			<h2>Information</h2>
 			<ul>
-				<li><a href="#">About</a></li>
+				<li><a href="<?php echo esc_url( get_permalink( get_page_by_path( 'about' ) ) ); ?>">About</a></li>>
 				<li><a href="<?php echo esc_url( get_permalink( get_page_by_path( 'contact-us' ) ) ); ?>">Contact</a></li>
 			</ul>
 		</div>
