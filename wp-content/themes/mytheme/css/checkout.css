@@ -5,8 +5,8 @@
     max-width: 1186px;
     margin-right: auto;
     margin-left: auto;
-    padding-right: 40px;
-    padding-left: 40px;
+    padding-right: var(--gutter);
+    padding-left: var(--gutter);
 }
 
 .checkout-title {
@@ -18,7 +18,7 @@
 }
 
 .woocommerce-billing-fields, .woocommerce-shipping-fields, .woocommerce-additional-fields {
-    padding: 32px;
+    padding: var(--space-l);
     background-color: #E8DBCB;
     border-radius: 24px;
 
@@ -42,7 +42,7 @@
 }
 
 .checkout-summary {
-    padding: 32px;
+    padding: var(--space-l);
     background-color: #E8DBCB;
     border-radius: 24px;
     margin: 24px 0;

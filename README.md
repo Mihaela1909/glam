@@ -66,3 +66,5 @@ Built and tested using [Local by WP Engine](https://localwp.com/).
 - Wordfence
 - UpdraftPlus (or WPvivid)
 - Autoptimize
+- WooCommerce
+- Stripe (WooCommerce integration)

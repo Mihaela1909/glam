@@ -5,8 +5,8 @@
     max-width: 1186px;
     margin-right: auto;
     margin-left: auto;
-    padding-right: 40px;
-    padding-left: 40px;
+    padding-right: var(--gutter);
+    padding-left: var(--gutter);
 }
 
 .cart-title {
@@ -82,13 +82,25 @@
     flex: 0 0 100%;
 }
 
+/* Side by side on desktop; the summary drops under the table when there isn't room for both */
 .woocommerce-cart .woocommerce-cart-form {
-    flex: 1;
+    flex: 999 1 420px;
     min-width: 0;
 }
 
 .woocommerce-cart .cart-collaterals {
-    flex: 0 0 340px;
+    flex: 1 1 340px;
+}
+
+/* Phones: WooCommerce stacks each cart row as label/value lines, so the row needs its natural height */
+@media (max-width: 768px) {
+    .woocommerce-cart-form .shop_table .cart_item {
+        height: auto !important;
+    }
+
+    .woocommerce-cart-form .shop_table td::before {
+        margin-right: var(--space-s);
+    }
 }
 
 .woocommerce-cart .cart-collaterals::before,
