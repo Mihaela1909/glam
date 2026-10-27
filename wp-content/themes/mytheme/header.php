@@ -16,7 +16,8 @@
 				<img src="<?php echo get_theme_file_uri( 'assets/glam.webp' ); ?>" alt="Glam" style="height: 40px;" width="74" height="40">
 			</a>
 		</div>
-		<nav aria-label="Primary navigation">
+		<button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-nav">Menu</button>
+		<nav id="primary-nav" aria-label="Primary navigation">
 			<ul>
 				<li><a href="<?php echo esc_url( home_url( '/shop/' ) ); ?>">Shop</a></li>
 				<li><a href="<?php echo esc_url( get_permalink( get_page_by_path( 'front-blog' ) ) ); ?>">Blog</a></li>
@@ -33,3 +34,15 @@
 		</div>
 	</div>
 </header>
+<script>
+	/* Mobile menu: without JS the nav simply stays visible */
+	(function () {
+		var header = document.querySelector('.site-header');
+		var toggle = header.querySelector('.menu-toggle');
+		header.classList.add('has-menu-toggle');
+		toggle.addEventListener('click', function () {
+			var open = header.classList.toggle('menu-open');
+			toggle.setAttribute('aria-expanded', open);
+		});
+	})();
+</script>
