@@ -1,7 +1,7 @@
 /* ===== Hero ===== */
 .hero-carousel {
 	position: relative;
-	height: 480px;
+	height: clamp(380px, 50vw, 480px);
 	overflow: hidden;
 }
 .hero-slide {
@@ -24,8 +24,8 @@
 }
 .hero-content {
 	width: 100%;
-	max-width: 1100px;
-	padding: 0 2rem;
+	max-width: var(--container-max);
+	padding: 0 var(--gutter);
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -69,101 +69,39 @@
 	margin-bottom: 1.5rem;
 	text-shadow: 0 2px 8px rgba(0,0,0,0.4);
 }
-.hero-buttons { display: flex; gap: 1rem; justify-content: center; }
-.btn {
-	padding: 0.75rem 1.75rem;
-	border-radius: 0;
-	background: #f3b6d1;
-	color: #4a0e2e;
-	text-decoration: none;
-	font-weight: 600;
-}
-.btn:hover { background: #4a0e2e;
-color: #fff;
-box-shadow: 0 0 20px 4px rgba(249, 219, 232, 0.7);
-}
+.hero-buttons { display: flex; flex-wrap: wrap; gap: var(--space-s); justify-content: center; }
 
 /* ===== Brand message ===== */
 .brand-message {
 	background: linear-gradient(180deg, #f3c9d8, #ffffff);
-	padding: 3rem 1.5rem;
-	font-size: 1.1rem;
+	padding: var(--space-xl) var(--gutter);
+	font-size: var(--step-1);
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	gap: 2rem;
+	gap: var(--space-l);
 }
 .brand-message p { text-align: center; margin: 0; }
-.sparkle { width: 64px; height: auto; flex-shrink: 0; }
+.sparkle { width: clamp(28px, 6vw, 64px); height: auto; flex-shrink: 0; }
 
 .section-divider {
 	height: 24px;
 	background: #5c0e2e;
 	width: 100%;
-	margin: 2rem 0;
+	margin: var(--space-l) 0;
 }
 
 /* ===== Bestsellers / Testimonials / Blog teaser ===== */
 .bestsellers, .testimonials, .blog-teaser {
-	padding: 2.5rem 1.5rem;
-	max-width: 1100px;
-	margin: 0 auto;
+	width: min(var(--container-max), 100% - 2 * var(--gutter));
+	margin-inline: auto;
+	padding-block: var(--space-xl);
 }
 .bestsellers > h2, .testimonials h2, .blog-teaser h2 {
-	margin-bottom: 1.5rem;
-    font-size: 2.75rem;
+	margin: 0 0 var(--space-l);
+	font-size: var(--step-3);
 }
 
-.product-grid {
-	display: grid;
-	grid-template-columns: repeat(4, 1fr);
-	gap: 1.25rem;
-}
-
-
-.product-card {
-	display: block;
-	padding: 1rem;
-	border: 6px solid transparent;
-	border-radius: 12px;
-	background:
-		linear-gradient(#ecdcc7, #ecdcc7) padding-box,
-		linear-gradient(135deg, #EBB7CE, #5C0E2E) border-box;
-	box-shadow: 0 4px 8px rgba(48, 2, 23, 0.25);
-	text-decoration: none;
-	transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.product-card:hover {
-	transform: scale(1.04);
-	box-shadow: 0 0 20px 4px rgba(243, 182, 209, 0.7);
-}
-
-.product-thumb {
-	background: #fff;
-	border-radius: 6px;
-	overflow: hidden;
-	margin-bottom: 0.75rem;
-	width: 180px;
-	height: 115px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	margin-left: auto;
-	margin-right: auto;
-}
-
-.product-thumb img {
-	max-width: 100%;
-	max-height: 100%;
-	width: auto;
-	height: auto;
-	object-fit: contain;
-	display: block;
-} 
-
-.product-name { font-weight: 600; margin: 0; text-align: center; }
-.product-price { color: #555; text-align: center; margin: 0.25rem 0 0; }
 .see-more { text-align: right; margin-top: 1rem; }
 .see-more a {
 	text-decoration: none;
@@ -172,11 +110,6 @@ box-shadow: 0 0 20px 4px rgba(249, 219, 232, 0.7);
 }
 .see-more a:hover { font-size: 1.1em; }
 
-.testimonial-grid {
-	display: grid;
-	grid-template-columns: repeat(3, 1fr);
-	gap: 1.25rem;
-}
 .testimonial-card {
 	background: #ecdcc7;
 	border-radius: 8px;
@@ -243,12 +176,14 @@ box-shadow: 0 0 20px 4px rgba(249, 219, 232, 0.7);
 	display: flex;
 	flex-wrap: nowrap;
 	gap: 1.5rem;
-	overflow-x: hidden;
+	overflow-x: auto;
+	scrollbar-width: none;
 	scroll-behavior: smooth;
 	scroll-snap-type: x mandatory;
 	width: 100%;
 	padding: 20px 0;
 }
+.blog-carousel-track::-webkit-scrollbar { display: none; }
 .blog-carousel-track .blog-card {
 	flex: 0 0 calc(50% - 0.75rem);
 	scroll-snap-align: start;
@@ -269,5 +204,12 @@ box-shadow: 0 0 20px 4px rgba(249, 219, 232, 0.7);
 .blog-carousel-arrow:hover {
 	background: #4a0e2e;
 	color: #fff;
+}
+
+/* Phones: swipe instead of arrows — the next card peeks in to show there's more */
+@media (max-width: 700px) {
+	.blog-carousel-track { gap: var(--space-s); }
+	.blog-carousel-track .blog-card { flex-basis: 85%; }
+	.blog-carousel-arrow { display: none; }
 }
 

@@ -43,7 +43,8 @@
 .shop-products ul.products,
 .bestsellers ul.products {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    /* 4 columns on desktop, fewer as the screen narrows */
+    grid-template-columns: repeat(auto-fill, minmax(min(14rem, 100%), 1fr));
     gap: 20px;
     padding: 0 0 40px !important;
 
