@@ -5,6 +5,6 @@
             'home'      => '',
         ) ); ?>
     </div>
-    <h1 class="checkout-title">Checkout</h1>
+    <h1 class="checkout-title"><?php echo is_wc_endpoint_url( 'order-received' ) ? 'Order received' : 'Checkout'; ?></h1>
     <?php echo do_shortcode("[woocommerce_checkout]") ?>
 <?php get_footer() ?>
