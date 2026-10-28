@@ -857,6 +857,29 @@ function mytheme_newsletter_popup()
 add_action('wp_footer', 'mytheme_newsletter_popup');
 
 /**
+ * Save an email as a newsletter sign-up, unless it is already on the list.
+ * Used by the newsletter pop-up and the product quiz.
+ */
+function mytheme_save_newsletter_signup($email)
+{
+	$existing = get_posts(array(
+		'post_type' => 'newsletter_signup',
+		'title' => $email,
+		'post_status' => 'any',
+		'numberposts' => 1,
+		'fields' => 'ids',
+	));
+	if (!empty($existing)) {
+		return $existing[0];
+	}
+	return wp_insert_post(array(
+		'post_title' => $email,
+		'post_status' => 'publish',
+		'post_type' => 'newsletter_signup',
+	), true);
+}
+
+/**
  * AJAX: save a newsletter sign-up (ignores duplicates).
  */
 function mytheme_newsletter_subscribe()
@@ -870,25 +893,351 @@ function mytheme_newsletter_subscribe()
 		wp_send_json_error(array('message' => 'Please enter a valid email address.'));
 	}
 
-	$existing = get_posts(array(
-		'post_type' => 'newsletter_signup',
-		'title' => $email,
-		'post_status' => 'any',
-		'numberposts' => 1,
-		'fields' => 'ids',
-	));
-	if (empty($existing)) {
-		$postId = wp_insert_post(array(
-			'post_title' => $email,
-			'post_status' => 'publish',
-			'post_type' => 'newsletter_signup',
-		), true);
-		if (is_wp_error($postId)) {
-			wp_send_json_error(array('message' => 'Something went wrong. Please try again.'));
-		}
+	if (is_wp_error(mytheme_save_newsletter_signup($email))) {
+		wp_send_json_error(array('message' => 'Something went wrong. Please try again.'));
 	}
 
 	wp_send_json_success(array('message' => 'Thank you for subscribing!'));
 }
 add_action('wp_ajax_mytheme_newsletter_subscribe', 'mytheme_newsletter_subscribe');
 add_action('wp_ajax_nopriv_mytheme_newsletter_subscribe', 'mytheme_newsletter_subscribe');
+
+/**
+ * ===== Product quiz (shop page) =====
+ * Five chat-style questions → a 3-product starter kit (base, eyes or cheeks, lips) + a matching tutorial.
+ */
+function mytheme_quiz_questions()
+{
+	return array(
+		array(
+			'key' => 'skin',
+			'text' => "Hey! Let's find your perfect everyday routine. What's your skin type?",
+			'options' => array('dry' => 'Dry & flaky', 'oily' => 'Oily & shiny', 'combination' => 'Combination', 'normal' => 'Normal / not sure'),
+		),
+		array(
+			'key' => 'time',
+			'text' => 'Got it. How much time do you usually spend on makeup?',
+			'options' => array('quick' => 'Under 5 min', 'medium' => '5–15 min', 'full' => 'I love a full glam'),
+		),
+		array(
+			'key' => 'goal',
+			'text' => "Nice! What's your main goal?",
+			'options' => array('glow' => 'A fresh, natural glow', 'coverage' => 'Coverage that lasts all day', 'learn' => 'Learn new techniques', 'bold' => 'A bold statement look'),
+		),
+		array(
+			'key' => 'ethics',
+			'text' => 'Do your products need to be cruelty-free or vegan?',
+			'options' => array('cruelty-free' => 'Cruelty-free only', 'vegan' => 'Vegan only', 'any' => "Doesn't matter"),
+		),
+		array(
+			'key' => 'tone',
+			'text' => "Last one — what's your skin tone, so we can match your shade?",
+			'options' => array('light' => 'Fair / light', 'medium' => 'Medium', 'deep' => 'Tan / deep'),
+		),
+	);
+}
+
+/**
+ * Read and validate quiz answers from the request. Returns false if any answer is missing or unknown.
+ */
+function mytheme_quiz_answers_from_request()
+{
+	$answers = array();
+	foreach (mytheme_quiz_questions() as $question) {
+		$value = isset($_POST[$question['key']]) ? sanitize_key(wp_unslash($_POST[$question['key']])) : '';
+		if (!isset($question['options'][$value])) {
+			return false;
+		}
+		$answers[$question['key']] = $value;
+	}
+	return $answers;
+}
+
+/**
+ * Score one product against the answers, using words from its name and short description.
+ */
+function mytheme_quiz_score($product, $answers)
+{
+	$text = strtolower($product->get_name() . ' ' . wp_strip_all_tags($product->get_short_description()));
+	$has = function ($words) use ($text) {
+		$hits = 0;
+		foreach ($words as $word) {
+			if (strpos($text, $word) !== false) {
+				$hits++;
+			}
+		}
+		return $hits;
+	};
+	$cats = wp_get_post_terms($product->get_id(), 'product_cat', array('fields' => 'slugs'));
+	$score = 0;
+
+	switch ($answers['skin']) {
+		case 'dry':
+			$score += 2 * $has(array('hydrat', 'glow', 'radian', 'nourish', 'cream', 'lotion', 'satin')) - 2 * $has(array('matte', 'powder'));
+			break;
+		case 'oily':
+			$score += 2 * $has(array('matte', 'longwear', 'long wear', 'powder', 'grip', 'setting')) - $has(array('glow', 'radian', 'oil'));
+			break;
+		case 'combination':
+			$score += $has(array('matte', 'lightweight', 'grip', 'buildable', 'soft-focus'));
+			break;
+	}
+
+	switch ($answers['time']) {
+		case 'quick':
+			// Multi-use products and easy formulas save time; baking powder does not.
+			$score += (count(array_intersect($cats, array('foundation', 'concealer', 'highlighter', 'primer'))) >= 2 ? 2 : 0)
+				+ $has(array('lightweight', 'lotion', 'oil', 'gloss', 'washable', 'pen'))
+				- 2 * $has(array('baking'));
+			break;
+		case 'full':
+			$score += $has(array('full coverage', 'longwear', 'baking', 'setting', 'intense', 'volum'));
+			break;
+	}
+
+	switch ($answers['goal']) {
+		case 'glow':
+			$score += 2 * $has(array('glow', 'radian', 'gloss', 'shine', 'illuminat', 'booster'));
+			break;
+		case 'coverage':
+			$score += 2 * $has(array('longwear', 'long wear', 'coverage', 'grip', 'setting', 'matte'));
+			break;
+		case 'learn':
+			$score += 2 * $has(array('buildable', 'baking', 'hourglass brush', 'brush', 'pen', 'blush'));
+			break;
+		case 'bold':
+			$score += 2 * $has(array('intense', 'matte', 'rich colour', 'volum', 'false-lash'));
+			break;
+	}
+
+	return $score;
+}
+
+/**
+ * Pick a shade for foundation/concealer products: shades are listed light → deep.
+ */
+function mytheme_quiz_shade($product, $answers)
+{
+	$cats = wp_get_post_terms($product->get_id(), 'product_cat', array('fields' => 'slugs'));
+	$attributes = $product->get_attributes();
+	if (!array_intersect($cats, array('foundation', 'concealer')) || !isset($attributes['pa_shade'])) {
+		return null;
+	}
+	$shades = $attributes['pa_shade']->get_terms();
+	if (empty($shades)) {
+		return null;
+	}
+	$position = array('light' => 0.15, 'medium' => 0.5, 'deep' => 1)[$answers['tone']];
+	return $shades[min(count($shades) - 1, (int) floor($position * count($shades)))];
+}
+
+/**
+ * Build the starter kit for a set of answers.
+ * Returns array('items' => [...], 'tutorial' => WP_Post|null, 'note' => string).
+ */
+function mytheme_quiz_recommend($answers)
+{
+	$slots = array(
+		'base' => $answers['time'] === 'full' ? array('foundation') : array('foundation', 'concealer', 'primer', 'powder'),
+		'extra' => $answers['goal'] === 'glow' ? array('blush', 'highlighter') : array('mascara'),
+		'lips' => $answers['goal'] === 'bold' ? array('lipstick') : array('lipstick', 'lipgloss'),
+	);
+	// Strictest first; fall back when a slot has no product that matches.
+	$ethics = array('vegan' => array('vegan', 'cruelty-free', ''), 'cruelty-free' => array('cruelty-free', ''), 'any' => array(''));
+
+	$products = wc_get_products(array('limit' => -1, 'status' => 'publish', 'stock_status' => 'instock'));
+	$items = array();
+	$used = array();
+	$note = '';
+
+	foreach ($slots as $slot => $slot_cats) {
+		foreach ($ethics[$answers['ethics']] as $required_tag) {
+			$best = null;
+			$best_score = PHP_INT_MIN;
+			foreach ($products as $product) {
+				$id = $product->get_id();
+				if (in_array($id, $used, true) || !has_term($slot_cats, 'product_cat', $id)) {
+					continue;
+				}
+				// The cheek step should add colour, not a second complexion product.
+				if ($slot === 'extra' && has_term('foundation', 'product_cat', $id)) {
+					continue;
+				}
+				if ($required_tag && !has_term($required_tag, 'product_tag', $id)) {
+					continue;
+				}
+				$score = mytheme_quiz_score($product, $answers);
+				// On a tie, the cheaper product makes a friendlier starter kit.
+				if ($score > $best_score || ($score === $best_score && (float) $product->get_price() < (float) $best->get_price())) {
+					$best = $product;
+					$best_score = $score;
+				}
+			}
+			if ($best) {
+				if ($required_tag !== $ethics[$answers['ethics']][0]) {
+					$note = $answers['ethics'] === 'vegan'
+						? "We don't have a vegan option for every step yet, so we picked the closest cruelty-free or classic match."
+						: "We don't have a cruelty-free option for every step yet, so we picked the closest classic match.";
+				}
+				$used[] = $best->get_id();
+				$items[] = array('product' => $best, 'shade' => mytheme_quiz_shade($best, $answers));
+				break;
+			}
+		}
+	}
+
+	// Tutorial to match the goal (blog post IDs).
+	$tutorials = array(
+		'glow' => 108,     // How to not fall victim to blush blindness
+		'coverage' => 133, // Long-wear base that survives a 12-hour shoot
+		'learn' => $answers['time'] === 'quick' ? 478 : 106, // Winged liner for beginners / Eyeshadow night-out tutorial
+		'bold' => 102,     // The DO's and DONT's of lip-lining
+	);
+	$tutorial = get_post($tutorials[$answers['goal']]);
+
+	return array(
+		'items' => $items,
+		'tutorial' => ($tutorial && $tutorial->post_status === 'publish') ? $tutorial : null,
+		'note' => $note,
+	);
+}
+
+/**
+ * Product page link with the suggested shade preselected, plus a direct add-to-cart link when the shade is the only choice.
+ */
+function mytheme_quiz_links($product, $shade)
+{
+	$links = array('view' => get_permalink($product->get_id()), 'add' => '');
+	if (!$shade) {
+		return $links;
+	}
+	$links['view'] = add_query_arg('attribute_pa_shade', $shade->slug, $links['view']);
+	$variation_id = (new WC_Product_Data_Store_CPT())->find_matching_product_variation($product, array('attribute_pa_shade' => $shade->slug));
+	if ($variation_id && count($product->get_variation_attributes()) === 1) {
+		$links['add'] = add_query_arg(array(
+			'add-to-cart' => $product->get_id(),
+			'variation_id' => $variation_id,
+			'attribute_pa_shade' => $shade->slug,
+		), wc_get_cart_url());
+	}
+	return $links;
+}
+
+function mytheme_quiz_results_html($result)
+{
+	ob_start();
+	?>
+		<div class="quiz-kit">
+			<?php foreach ($result['items'] as $item):
+				$product = $item['product'];
+				$links = mytheme_quiz_links($product, $item['shade']);
+				?>
+				<article class="quiz-product">
+					<a class="quiz-product-image" href="<?php echo esc_url($links['view']); ?>" tabindex="-1" aria-hidden="true">
+						<?php echo $product->get_image('woocommerce_thumbnail', array('loading' => 'lazy')); ?>
+					</a>
+					<h3 class="quiz-product-name"><a href="<?php echo esc_url($links['view']); ?>"><?php echo esc_html($product->get_name()); ?></a></h3>
+					<p class="quiz-product-price"><?php echo wp_kses_post($product->get_price_html()); ?></p>
+					<?php if ($item['shade']): ?>
+						<p class="quiz-product-shade">Your shade: <strong><?php echo esc_html($item['shade']->name); ?></strong></p>
+					<?php endif; ?>
+					<div class="quiz-product-actions">
+						<?php if ($links['add']): ?>
+							<a class="btn quiz-product-add" href="<?php echo esc_url($links['add']); ?>">Add to cart</a>
+						<?php endif; ?>
+						<a class="quiz-product-view" href="<?php echo esc_url($links['view']); ?>">View product</a>
+					</div>
+				</article>
+			<?php endforeach; ?>
+		</div>
+		<?php if ($result['note']): ?>
+			<p class="quiz-note"><?php echo esc_html($result['note']); ?></p>
+		<?php endif; ?>
+		<?php if ($result['tutorial']): ?>
+			<a class="quiz-tutorial" href="<?php echo esc_url(get_permalink($result['tutorial'])); ?>">
+				<span class="quiz-tutorial-label">Your tutorial</span>
+				<span class="quiz-tutorial-title"><?php echo esc_html(get_the_title($result['tutorial'])); ?> &rarr;</span>
+			</a>
+		<?php endif; ?>
+		<?php
+	return ob_get_clean();
+}
+
+/**
+ * AJAX: quiz answers → result cards.
+ */
+function mytheme_quiz_results()
+{
+	check_ajax_referer('mytheme_quiz', 'nonce');
+	$answers = mytheme_quiz_answers_from_request();
+	if (!$answers) {
+		wp_send_json_error(array('message' => 'Something went wrong. Please start the quiz again.'));
+	}
+	wp_send_json_success(array('html' => mytheme_quiz_results_html(mytheme_quiz_recommend($answers))));
+}
+add_action('wp_ajax_mytheme_quiz_results', 'mytheme_quiz_results');
+add_action('wp_ajax_nopriv_mytheme_quiz_results', 'mytheme_quiz_results');
+
+/**
+ * AJAX: email the quiz results and add the address to the newsletter list.
+ */
+function mytheme_quiz_email()
+{
+	check_ajax_referer('mytheme_quiz', 'nonce');
+	$answers = mytheme_quiz_answers_from_request();
+	$email = isset($_POST['email']) ? sanitize_email(wp_unslash($_POST['email'])) : '';
+	if (!$answers) {
+		wp_send_json_error(array('message' => 'Something went wrong. Please start the quiz again.'));
+	}
+	if (!is_email($email)) {
+		wp_send_json_error(array('message' => 'Please enter a valid email address.'));
+	}
+
+	$result = mytheme_quiz_recommend($answers);
+	$lines = array();
+	foreach ($result['items'] as $item) {
+		$links = mytheme_quiz_links($item['product'], $item['shade']);
+		$shade = $item['shade'] ? ' (your shade: ' . esc_html($item['shade']->name) . ')' : '';
+		$lines[] = '<li><a href="' . esc_url($links['view']) . '">' . esc_html($item['product']->get_name()) . '</a>' . $shade . '</li>';
+	}
+	$body = '<h2>Your glam starter kit</h2><ul>' . implode('', $lines) . '</ul>';
+	if ($result['tutorial']) {
+		$body .= '<p>Your tutorial: <a href="' . esc_url(get_permalink($result['tutorial'])) . '">' . esc_html(get_the_title($result['tutorial'])) . '</a></p>';
+	}
+	$body .= '<p>Welcome to the glam newsletter! Use code <strong>GLAM10</strong> for 10% off your first order.</p>';
+
+	mytheme_save_newsletter_signup($email);
+	$sent = wp_mail($email, 'Your glam starter kit', $body, array('Content-Type: text/html; charset=UTF-8'));
+
+	if (!$sent) {
+		wp_send_json_error(array('message' => "We couldn't send the email right now. Please try again later."));
+	}
+	wp_send_json_success(array('message' => 'Sent! Check your inbox — your code GLAM10 is in there too.'));
+}
+add_action('wp_ajax_mytheme_quiz_email', 'mytheme_quiz_email');
+add_action('wp_ajax_nopriv_mytheme_quiz_email', 'mytheme_quiz_email');
+
+function mytheme_enqueue_quiz()
+{
+	if (!function_exists('is_shop') || !(is_shop() || is_product_taxonomy())) {
+		return;
+	}
+	wp_enqueue_style('mytheme-quiz', get_theme_file_uri('css/quiz.css'), array('mytheme-shop'), filemtime(get_theme_file_path('css/quiz.css')));
+	wp_enqueue_script('mytheme-quiz', get_theme_file_uri('js/quiz.js'), array(), filemtime(get_theme_file_path('js/quiz.js')), true);
+
+	$questions = array();
+	foreach (mytheme_quiz_questions() as $question) {
+		$options = array();
+		foreach ($question['options'] as $value => $label) {
+			$options[] = array('value' => $value, 'label' => $label);
+		}
+		$questions[] = array('key' => $question['key'], 'text' => $question['text'], 'options' => $options);
+	}
+	wp_localize_script('mytheme-quiz', 'glamQuiz', array(
+		'ajaxUrl' => admin_url('admin-ajax.php'),
+		'nonce' => wp_create_nonce('mytheme_quiz'),
+		'questions' => $questions,
+		'finalText' => "Here's your personalised starter kit + a tutorial to match:",
+	));
+}
+add_action('wp_enqueue_scripts', 'mytheme_enqueue_quiz');

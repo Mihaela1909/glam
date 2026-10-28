@@ -28,6 +28,11 @@
                     'show_count' => true,
                 )); ?>
             </ul>
+            <div class="quiz-promo">
+                <p class="quiz-promo-title">Not sure what to pick?</p>
+                <p class="quiz-promo-text">5 quick questions, 3 perfect matches.</p>
+                <button type="button" class="btn quiz-promo-btn" data-quiz-open aria-haspopup="dialog" aria-controls="quiz-dialog">Find my match</button>
+            </div>
             <h2>GOOD TO KNOW</h2>
             <ul>
                 <li>
@@ -76,4 +81,7 @@
         <?php woocommerce_content() ?>
     </div>
 </div>
+<?php if (!is_product()) {
+    get_template_part('template-parts/product-quiz');
+} ?>
 <?php get_footer() ?>
