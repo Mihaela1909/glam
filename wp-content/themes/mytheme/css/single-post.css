@@ -236,8 +236,13 @@ main.single-post {
 	min-height: 80px;
 	resize: vertical;
 }
+/* Shared .btn look, without the browser's default grey button border */
 .comment-submit-btn {
 	align-self: flex-end;
+	border: none;
+	font: inherit;
+	font-weight: 600;
+	cursor: pointer;
 }
 
 /* ===== Comment replies ===== */

@@ -28,13 +28,14 @@
 	background: #f3b6d1;
 	color: #4a0e2e;
 	border: none;
+	border-radius: 3px;
 	padding: 0.6rem 1.25rem;
 	font-weight: 600;
 	cursor: pointer;
 }
 
 .filter-btn:hover {
-	background: #4a0e2e;
+	background: #5c0e2e;
 	color: #fff;
 }
 
@@ -136,13 +137,14 @@
 	background: #f3b6d1;
 	color: #4a0e2e;
 	border: none;
+	border-radius: 3px;
 	padding: 0.75rem 2rem;
 	font-weight: 600;
 	cursor: pointer;
 }
 
 .load-more-btn:hover {
-	background: #4a0e2e;
+	background: #5c0e2e;
 	color: #fff;
 	box-shadow: 0 0 20px 4px rgba(249, 219, 232, 0.7);
 }

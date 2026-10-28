@@ -50,6 +50,11 @@
         background-color: #EBB7CE;
         color: #5C0E2E;
         font-weight: bold;
+
+        &:hover {
+            background-color: #5C0E2E;
+            color: #fff;
+        }
     }
 }
 
@@ -460,6 +465,11 @@
         color: #5C0E2E;
         font-size: 16px;
         font-weight: bold;
+
+        &:hover {
+            background-color: #5C0E2E;
+            color: #fff;
+        }
     }
 }
 

@@ -322,10 +322,16 @@
     padding: 8px 12px;
     background-color: #EBB7CE;
     border: none;
+    border-radius: 3px;
     text-align: center;
     font-weight: bold;
     font-size: 14px;
     cursor: pointer;
+
+    &:hover {
+        background-color: #5C0E2E;
+        color: #fff;
+    }
 }
 
 .shop-toolbar {
@@ -574,9 +580,14 @@
     flex: 1;
     padding: 12px 48px !important;
     border-radius: 999px !important;
-    background-color: #5C0E2E !important;
-    color: #fff !important;
+    background-color: #EBB7CE !important;
+    color: #5C0E2E !important;
     font-weight: bold;
+
+    &:hover {
+        background-color: #5C0E2E !important;
+        color: #fff !important;
+    }
 }
 
 .woocommerce .quantity .qty {
