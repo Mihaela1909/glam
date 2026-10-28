@@ -16,7 +16,8 @@
 				$post_image = get_field( 'post_image' );
 				if ( $post_image ) :
 					?>
-				<img src="<?php echo esc_url( $post_image['sizes']['large'] ?? $post_image['url'] ); ?>" alt="<?php echo esc_attr( $post_image['alt'] ); ?>" loading="lazy" width="800" height="420">					<?php
+				<?php echo wp_get_attachment_image( $post_image['ID'], 'large', false, array( 'loading' => false, 'fetchpriority' => 'high' ) ); ?>
+					<?php
 				elseif ( has_post_thumbnail() ) :
 					the_post_thumbnail( 'large' );
 				endif;
@@ -71,7 +72,7 @@
 			<hr class="single-post-divider">
 
 			<div class="single-post-text">
-				<?php the_content(); ?>
+				<?php echo mytheme_get_post_body(); ?>
 			</div>
 
 			<hr class="single-post-divider">

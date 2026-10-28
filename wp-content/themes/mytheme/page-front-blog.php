@@ -13,7 +13,7 @@ $current_cat = isset( $_GET['blog_cat'] ) ? absint( $_GET['blog_cat'] ) : 0;
 
 		<!-- ===== Category filter links AJAX ===== -->
 <div class="blog-filter">
-	<button id="filter-toggle" class="btn filter-btn">Filter &gt;</button>
+	<button id="filter-toggle" class="btn filter-btn" aria-expanded="false" aria-controls="filter-list">Filter &gt;</button>
 	<ul id="filter-list" class="filter-dropdown" hidden>
 		<li><a href="#" data-cat="0" class="filter-link <?php echo $current_cat === 0 ? 'active-filter' : ''; ?>">All</a></li>
 		<?php
@@ -76,10 +76,12 @@ document.addEventListener('DOMContentLoaded', function () {
 	if (toggle && list) {
 		toggle.addEventListener('click', function () {
 			list.hidden = !list.hidden;
+			toggle.setAttribute('aria-expanded', String(!list.hidden));
 		});
 		document.addEventListener('click', function (e) {
 			if (!toggle.contains(e.target) && !list.contains(e.target)) {
 				list.hidden = true;
+				toggle.setAttribute('aria-expanded', 'false');
 			}
 		});
 	}
@@ -119,6 +121,7 @@ document.addEventListener('DOMContentLoaded', function () {
 			document.querySelectorAll('.filter-link').forEach(function (l) { l.classList.remove('active-filter'); });
 			this.classList.add('active-filter');
 			list.hidden = true;
+			toggle.setAttribute('aria-expanded', 'false');
 
 			grid.style.opacity = '0.5';
 			fetchPosts(1, cat, true).then(function () {

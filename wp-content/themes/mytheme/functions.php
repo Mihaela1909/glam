@@ -228,7 +228,14 @@ function mytheme_meta_description()
 	} elseif (is_page('front-blog')) {
 		$desc = 'Explore beauty tips, tutorials and sustainable makeup guides on the glam blog — everything for your everyday glam routine.';
 	} elseif (is_singular('post')) {
-		$desc = has_excerpt() ? wp_strip_all_tags(get_the_excerpt()) : wp_trim_words(wp_strip_all_tags(get_the_content()), 30);
+		$intro = get_field('post_intro');
+		if ($intro) {
+			$desc = wp_trim_words($intro, 30);
+		} elseif (has_excerpt()) {
+			$desc = wp_strip_all_tags(get_the_excerpt());
+		} else {
+			$desc = wp_trim_words(wp_strip_all_tags(mytheme_get_post_body(false)), 30);
+		}
 	} elseif (is_singular('product')) {
 		$desc = wp_trim_words(wp_strip_all_tags(get_the_content()), 30);
 	} else {
@@ -274,9 +281,19 @@ function mytheme_article_schema()
 		'dateModified' => get_the_modified_date('c'),
 		'author' => array(
 			'@type' => 'Person',
-			'name' => get_the_author(),
+			// get_the_author() is empty in wp_head because it runs outside the loop.
+			'name' => get_field('author_name') ?: get_the_author_meta('display_name', get_post_field('post_author')),
+		),
+		'publisher' => array(
+			'@type' => 'Organization',
+			'name' => 'glam',
 		),
 	);
+	$post_image = get_field('post_image');
+	$image_url = $post_image ? $post_image['url'] : get_the_post_thumbnail_url(null, 'large');
+	if ($image_url) {
+		$schema['image'] = $image_url;
+	}
 	echo '<script type="application/ld+json">' . wp_json_encode($schema) . '</script>' . "\n";
 }
 add_action('wp_head', 'mytheme_article_schema');
@@ -639,3 +656,52 @@ function mytheme_checkout_summary_close()
 	echo '</div>';
 }
 add_action('woocommerce_checkout_after_order_review', 'mytheme_checkout_summary_close');
+
+
+/**
+ * Blog post editor: help text under the ACF fields, and hide fields the theme never shows.
+ * Hidden fields keep their saved values.
+ */
+function mytheme_blog_field_instructions($field)
+{
+	$instructions = array(
+		'read_time' => 'Number of minutes, e.g. 5. Shown as "5 Mins Read" on the card and the post.',
+		'post_title_field' => 'Optional. Overrides the normal title on the card and the post. Leave empty to use the normal title.',
+		'post_text' => 'Optional. Full article text, used when it is longer than the text in the main editor. Also used for the card preview.',
+		'post_image' => 'Optional. Overrides the Featured image on the card and the post.',
+		'post_intro' => 'Optional. Short intro paragraph shown above the article.',
+		'author_name' => 'Optional. Leave empty to show the WordPress author.',
+		'author_role' => 'Optional. Shown under the author name, e.g. "Make-up Artist".',
+		'author_avatar' => 'Optional. Small round photo next to the author name.',
+	);
+	if (isset($instructions[$field['name']])) {
+		$field['instructions'] = $instructions[$field['name']];
+	}
+	return $field;
+}
+foreach (array('read_time', 'post_title_field', 'post_text', 'post_image', 'post_intro', 'author_name', 'author_role', 'author_avatar') as $mytheme_field_name) {
+	add_filter('acf/prepare_field/name=' . $mytheme_field_name, 'mytheme_blog_field_instructions');
+}
+
+// Subtitle and Badge tag are not shown anywhere (tags come from WordPress Tags).
+add_filter('acf/prepare_field/name=subtitle', '__return_false');
+add_filter('acf/prepare_field/name=badge_tag', '__return_false');
+
+/**
+ * Article HTML for a single blog post.
+ * Some posts keep the full article in the ACF "Post text" field and only a teaser in the editor,
+ * so "Post text" is used when the editor has less than half as many words.
+ */
+function mytheme_get_post_body($format = true)
+{
+	$post_text = get_field('post_text');
+	// Passing the post lets this also work outside the loop (in wp_head for the meta description).
+	$content = get_the_content(null, false, get_post());
+	$word_count = function ($html) {
+		return str_word_count(html_entity_decode(wp_strip_all_tags($html)));
+	};
+	if ($post_text && $word_count($post_text) > 2 * $word_count($content)) {
+		return wp_kses_post($post_text);
+	}
+	return $format ? apply_filters('the_content', $content) : $content;
+}
