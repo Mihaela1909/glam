@@ -80,14 +80,14 @@ document.addEventListener('DOMContentLoaded', function () {
 				<path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
 			</svg>
 		</a>
-		<a href="#" aria-label="Instagram">
+		<a href="https://www.instagram.com/glam_denmark" aria-label="Instagram" target="_blank" rel="noopener">
 			<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 				<rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
 				<path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
 				<line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
 			</svg>
 		</a>
-		<a href="#" aria-label="TikTok">
+		<a href="https://www.tiktok.com/@glam_denmark" aria-label="TikTok" target="_blank" rel="noopener">
 			<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
 				<path d="M16.5 3c.3 2.1 1.7 3.6 3.9 3.9v2.6c-1.4 0-2.8-.4-3.9-1.2v6.2c0 3.2-2.6 5.5-5.6 5.5-1.4 0-2.7-.5-3.7-1.5-1.6-1.6-1.9-4.2-.6-6.1C7.6 11 9.1 10.1 10.7 10v2.7c-.5-.1-1.1 0-1.6.3-.9.5-1.4 1.6-1.1 2.6.3.9 1.2 1.6 2.2 1.6 1.4 0 2.5-1.1 2.5-2.5V3h3.8z"></path>
 			</svg>

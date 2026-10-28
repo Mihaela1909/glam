@@ -38,21 +38,40 @@
 .contact-form {
 	background: #ecdcc7;
 	padding: 2rem;
-	border-radius: 4px;
+	border-radius: 16px; /* same as the product cards */
+	box-shadow: 0 4px 8px rgba(48, 2, 23, 0.25); /* same as the blog cards */
 }
 .contact-form label {
 	display: block;
 	margin-bottom: 0.4rem;
+	color: #5C0E2E;
 	font-weight: 600;
 }
+/* Fields match the shop search bar: plum border, soft pink fill, rounded */
 .contact-form input,
 .contact-form textarea {
 	width: 100%;
-	padding: 0.6rem;
-	border: 1px solid #4a0e2e;
-	border-radius: 2px;
-	font-family: inherit;
+	padding: 0.7rem 1rem;
+	border: 2px solid #5C0E2E;
+	border-radius: 20px;
+	background-color: #F8EEF2;
+	color: var(--color-text);
+	font: inherit;
 	box-sizing: border-box;
+}
+.contact-form textarea {
+	resize: vertical;
+}
+/* Shared .btn look, without the browser's default grey button border */
+.contact-form .btn {
+	border: none;
+	font: inherit;
+	font-weight: 600;
+	cursor: pointer;
+}
+.contact-form .btn:disabled {
+	opacity: 0.7;
+	cursor: wait;
 }
 .contact-form p {
 	margin-bottom: 1.25rem;
@@ -77,16 +96,22 @@
 	vertical-align: middle;
 }
 .contact-icons a {
-	color: #333;
-	display: inline-flex;
-	transition: opacity 0.2s ease;
+	width: 48px;
+	height: 48px;
+	display: inline-grid;
+	place-items: center;
+	border-radius: 50%;
+	background: #1c1c1c;
+	color: #fff;
+	transition: background 0.2s ease, box-shadow 0.2s ease;
 }
 .contact-icons a:hover {
-	opacity: 0.6;
+	background: #5C0E2E;
+	box-shadow: 0 0 20px 4px rgba(249, 219, 232, 0.7); /* same glow as .btn:hover */
 }
 .contact-icons svg {
-	width: 22px;
-	height: 22px;
+	width: 26px;
+	height: 26px;
 }
 .contact-signoff .sparkle {
 	display: block;

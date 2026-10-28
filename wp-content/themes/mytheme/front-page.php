@@ -25,12 +25,13 @@ $content_id = ! empty( $site_content ) ? $site_content[0]->ID : null;
 style="background-image: url('<?php echo esc_url( $slide['slide_image']['sizes']['large'] ?? $slide['slide_image']['url'] ); ?>');">				<div class="hero-content hero-content-<?php echo esc_attr( $slide['text_position'] ?: 'center' ); ?>">
 							<h2><?php echo nl2br( esc_html( $slide['slide_heading'] ) ); ?></h2>					<div class="hero-buttons">
 						<?php if ( ! empty( $slide['slide_button_text'] ) ) : ?>
-							<a class="btn" href="<?php echo esc_url( $slide['slide_button_link'] ); ?>">
+							<?php // A button without a link in Homepage Content goes to the shop instead of nowhere. ?>
+							<a class="btn" href="<?php echo esc_url( $slide['slide_button_link'] ?: home_url( '/shop/' ) ); ?>">
 								<?php echo esc_html( $slide['slide_button_text'] ); ?>
 							</a>
 						<?php endif; ?>
 						<?php if ( ! empty( $slide['slide_button_2_text'] ) ) : ?>
-							<a class="btn" href="<?php echo esc_url( $slide['slide_button_2_link'] ); ?>">
+							<a class="btn" href="<?php echo esc_url( $slide['slide_button_2_link'] ?: home_url( '/shop/' ) ); ?>">
 								<?php echo esc_html( $slide['slide_button_2_text'] ); ?>
 							</a>
 						<?php endif; ?>

@@ -7,8 +7,8 @@
 		<div class="footer-col footer-col-1">
 			<h2>Customer service</h2>
 			<ul>
-				<li><a href="<?php echo esc_url( home_url( '/delivery' ) ); ?>">Delivery</a></li>
-				<li><a href="<?php echo esc_url( home_url( '/returns' ) ); ?>">Returns</a></li>
+				<li><a href="<?php echo esc_url( get_permalink( get_page_by_path( 'contact-us' ) ) ); ?>">Delivery</a></li>
+				<li><a href="<?php echo esc_url( get_permalink( get_page_by_path( 'contact-us' ) ) ); ?>">Returns</a></li>
 			</ul>
 		</div>
 
@@ -30,6 +30,10 @@
 
 		<div class="footer-divider" aria-hidden="true"></div>
 	</div>
+
+	<p class="footer-disclaimer container">
+		glam is a student project made for educational purposes, not a real webshop. Nothing is sold, no payments are processed and no money is made from this site. All brand names, product names and images belong to their respective owners.
+	</p>
 </footer>
 
 <?php wp_footer(); ?>

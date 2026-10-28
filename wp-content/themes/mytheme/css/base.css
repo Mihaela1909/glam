@@ -208,6 +208,17 @@ ul { list-style: none; margin: 0; padding: 0; }
 	min-height: 24px;
 }
 
+/* Student-project disclaimer under the footer columns */
+.site-footer .footer-disclaimer {
+	margin: 0 auto;
+	padding-block: var(--space-m);
+	border-top: 1px solid rgba(255, 255, 255, 0.25);
+	color: rgba(255, 255, 255, 0.8);
+	font-size: 0.8rem;
+	line-height: 1.5;
+	text-align: center;
+}
+
 /* Small screens: logo on top, then each column stacked with its own divider line */
 @media (max-width: 700px) {
 	.site-footer .footer-grid {
