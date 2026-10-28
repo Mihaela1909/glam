@@ -705,3 +705,190 @@ function mytheme_get_post_body($format = true)
 	}
 	return $format ? apply_filters('the_content', $content) : $content;
 }
+
+/**
+ * Newsletter Subscriber CPT — stores emails from the newsletter pop-up.
+ * post_title = email address.
+ */
+function mytheme_register_newsletter_cpt()
+{
+	register_post_type('newsletter_signup', array(
+		'labels' => array(
+			'name' => 'Newsletter Subscribers',
+			'singular_name' => 'Newsletter Subscriber',
+		),
+		'public' => false,
+		'show_ui' => true,
+		'show_in_menu' => true,
+		'menu_icon' => 'dashicons-email-alt',
+		'supports' => array('title'),
+	));
+}
+add_action('init', 'mytheme_register_newsletter_cpt');
+
+/**
+ * Newsletter pop-up: skip cart/checkout so it never interrupts a purchase.
+ */
+function mytheme_show_newsletter_popup()
+{
+	return !is_admin() && !(function_exists('is_cart') && (is_cart() || is_checkout()));
+}
+
+function mytheme_enqueue_newsletter()
+{
+	if (!mytheme_show_newsletter_popup()) {
+		return;
+	}
+	wp_enqueue_style('mytheme-newsletter', get_theme_file_uri('css/newsletter.css'), array('mytheme-base'), filemtime(get_theme_file_path('css/newsletter.css')));
+}
+add_action('wp_enqueue_scripts', 'mytheme_enqueue_newsletter');
+
+function mytheme_newsletter_popup()
+{
+	if (!mytheme_show_newsletter_popup()) {
+		return;
+	}
+	get_template_part('template-parts/newsletter-popup');
+	?>
+		<script>
+			document.addEventListener('DOMContentLoaded', function () {
+				var popup = document.getElementById('newsletter-popup');
+				if (!popup || typeof popup.showModal !== 'function') {
+					return;
+				}
+				var form = popup.querySelector('.newsletter-form');
+				var input = popup.querySelector('.newsletter-input');
+				var submit = popup.querySelector('.newsletter-submit');
+				var status = popup.querySelector('.newsletter-status');
+				var success = popup.querySelector('.newsletter-success');
+				var reopen = document.querySelector('.newsletter-reopen');
+				var footer = document.querySelector('.site-footer');
+
+				function store(key) {
+					try { localStorage.setItem(key, '1'); } catch (e) {}
+				}
+				function stored(key) {
+					try { return localStorage.getItem(key) === '1'; } catch (e) { return false; }
+				}
+				// Subscribers see their discount code instead of the form when they reopen it.
+				function showSuccess() {
+					form.hidden = true;
+					success.hidden = false;
+				}
+				if (stored('glamNewsletterSubscribed')) {
+					showSuccess();
+				}
+
+				// Show once per visitor, shortly after the page loads.
+				if (!stored('glamNewsletterSeen')) {
+					setTimeout(function () { popup.showModal(); }, 1500);
+				}
+
+				// Closing in any way (X, Esc, click outside) counts as seen.
+				popup.addEventListener('close', function () {
+					store('glamNewsletterSeen');
+				});
+				popup.querySelector('.newsletter-close').addEventListener('click', function () {
+					popup.close();
+				});
+				popup.addEventListener('click', function (e) {
+					if (e.target === popup) {
+						var r = popup.getBoundingClientRect();
+						var inside = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+						if (!inside) {
+							popup.close();
+						}
+					}
+				});
+
+				// Star button: reopens the pop-up any time.
+				reopen.addEventListener('click', function () {
+					status.textContent = '';
+					popup.showModal();
+				});
+
+				// Keep the star button above the footer instead of covering it.
+				function placeReopen() {
+					var overlap = footer ? window.innerHeight - footer.getBoundingClientRect().top : 0;
+					reopen.style.transform = overlap > 0 ? 'translateY(' + -overlap + 'px)' : '';
+				}
+				window.addEventListener('scroll', placeReopen, { passive: true });
+				window.addEventListener('resize', placeReopen);
+				placeReopen();
+
+				form.addEventListener('submit', function (e) {
+					e.preventDefault();
+					if (!input.checkValidity()) {
+						input.setAttribute('aria-invalid', 'true');
+						status.textContent = 'Please enter a valid email address.';
+						input.focus();
+						return;
+					}
+					input.removeAttribute('aria-invalid');
+					submit.disabled = true;
+					status.textContent = 'Subscribing...';
+
+					var data = new FormData(form);
+					data.append('action', 'mytheme_newsletter_subscribe');
+
+					fetch('<?php echo esc_url(admin_url('admin-ajax.php')); ?>', { method: 'POST', body: data })
+						.then(function (res) { return res.json(); })
+						.then(function (response) {
+							if (response.success) {
+								status.textContent = '';
+								showSuccess();
+								store('glamNewsletterSubscribed');
+								store('glamNewsletterSeen');
+							} else {
+								status.textContent = response.data.message;
+							}
+						})
+						.catch(function () {
+							status.textContent = 'Something went wrong. Please try again.';
+						})
+						.finally(function () {
+							submit.disabled = false;
+						});
+				});
+			});
+		</script>
+		<?php
+}
+add_action('wp_footer', 'mytheme_newsletter_popup');
+
+/**
+ * AJAX: save a newsletter sign-up (ignores duplicates).
+ */
+function mytheme_newsletter_subscribe()
+{
+	if (!isset($_POST['newsletter_nonce']) || !wp_verify_nonce($_POST['newsletter_nonce'], 'mytheme_newsletter_subscribe')) {
+		wp_send_json_error(array('message' => 'Security check failed. Please refresh and try again.'));
+	}
+
+	$email = isset($_POST['email']) ? sanitize_email(wp_unslash($_POST['email'])) : '';
+	if (!is_email($email)) {
+		wp_send_json_error(array('message' => 'Please enter a valid email address.'));
+	}
+
+	$existing = get_posts(array(
+		'post_type' => 'newsletter_signup',
+		'title' => $email,
+		'post_status' => 'any',
+		'numberposts' => 1,
+		'fields' => 'ids',
+	));
+	if (empty($existing)) {
+		$postId = wp_insert_post(array(
+			'post_title' => $email,
+			'post_status' => 'publish',
+			'post_type' => 'newsletter_signup',
+		), true);
+		if (is_wp_error($postId)) {
+			wp_send_json_error(array('message' => 'Something went wrong. Please try again.'));
+		}
+	}
+
+	wp_send_json_success(array('message' => 'Thank you for subscribing!'));
+}
+add_action('wp_ajax_mytheme_newsletter_subscribe', 'mytheme_newsletter_subscribe');
+add_action('wp_ajax_nopriv_mytheme_newsletter_subscribe', 'mytheme_newsletter_subscribe');
