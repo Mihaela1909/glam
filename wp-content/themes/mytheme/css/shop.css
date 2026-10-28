@@ -160,8 +160,8 @@
         }
 
         .card-badge--cruelty-free {
-            color: #2F7D4F;
-            border-color: #2F7D4F;
+            color: #1F6B3F;   /* darker green, passes 4.5:1 on the sand card */
+            border-color: #1F6B3F;
         }
 
         .price {
@@ -476,7 +476,12 @@
 .product-badge--cruelty-free {
     border-color: #B9DEC6;
     background-color: #E6F4EA;
-    color: #2F7D4F;
+    color: #1F6B3F;   /* passes 4.5:1 on the light green */
+}
+
+/* WooCommerce's default "In stock" yellow-green only reaches 3.4:1 on white */
+.woocommerce div.product p.stock.in-stock {
+    color: #1F6B3F;
 }
 
 .single-product div.product .product_title {

@@ -1,4 +1,5 @@
 <?php get_header() ?>
+<main id="main-content">
 <?php if (!is_product()): ?>
     <section class="shop-banner">
         <div class="shop-banner-text">
@@ -84,4 +85,5 @@
 <?php if (!is_product()) {
     get_template_part('template-parts/product-quiz');
 } ?>
+</main>
 <?php get_footer() ?>

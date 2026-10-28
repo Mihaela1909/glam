@@ -157,7 +157,8 @@ add_filter('woocommerce_product_related_products_heading', 'mytheme_related_head
 
 function mytheme_enqueue_assets()
 {
-	wp_enqueue_style('mytheme-base', get_theme_file_uri('css/base.css'), array(), filemtime(get_theme_file_path('css/base.css')));
+	wp_enqueue_style('mytheme-fonts', 'https://fonts.googleapis.com/css2?family=Stack+Sans+Text:wght@200..700&display=swap', array(), null);
+	wp_enqueue_style('mytheme-base', get_theme_file_uri('css/base.css'), array('mytheme-fonts'), filemtime(get_theme_file_path('css/base.css')));
 
 	if (is_front_page()) {
 		wp_enqueue_style('mytheme-front-page', get_theme_file_uri('css/front-page.css'), array('mytheme-base'), filemtime(get_theme_file_path('css/front-page.css')));
@@ -227,6 +228,13 @@ function mytheme_meta_description()
 		$desc = 'Get in touch with the glam team — questions, recommendations or feedback about our cruelty-free beauty products. We would love to hear from you.';
 	} elseif (is_page('front-blog')) {
 		$desc = 'Explore beauty tips, tutorials and sustainable makeup guides on the glam blog — everything for your everyday glam routine.';
+	} elseif (is_page('about')) {
+		$desc = 'Meet glam: a Danish online beauty shop with a curated, cruelty-free range of makeup from brands we have personally vetted.';
+	} elseif (function_exists('is_shop') && is_shop()) {
+		$desc = 'Shop cruelty-free and vegan makeup, foundation, mascara and lip products at glam. Ships from Denmark — not sure where to start? Take our quick quiz.';
+	} elseif (function_exists('is_product_category') && is_product_category()) {
+		$term = get_queried_object();
+		$desc = $term->description ? wp_strip_all_tags($term->description) : 'Shop ' . $term->name . ' at glam — curated, cruelty-free beauty that ships from Denmark.';
 	} elseif (is_singular('post')) {
 		$intro = get_field('post_intro');
 		if ($intro) {
@@ -240,6 +248,9 @@ function mytheme_meta_description()
 		$desc = wp_trim_words(wp_strip_all_tags(get_the_content()), 30);
 	} else {
 		$desc = get_bloginfo('description');
+	}
+	if (!$desc) {
+		$desc = 'glam is a curated online beauty shop in Denmark offering cruelty-free, sustainable makeup and skincare from trusted, hand-picked brands.';
 	}
 	echo '<meta name="description" content="' . esc_attr($desc) . '">' . "\n";
 }
@@ -402,6 +413,9 @@ function mytheme_register_contact_message_cpt()
 		'show_in_menu' => true,
 		'menu_icon' => 'dashicons-email',
 		'supports' => array('title', 'custom-fields'),
+		// Personal data: own capabilities so only administrators can see it (see mytheme_setup_roles).
+		'capability_type' => array('contact_message', 'contact_messages'),
+		'map_meta_cap' => true,
 	));
 }
 add_action('init', 'mytheme_register_contact_message_cpt');
@@ -643,6 +657,21 @@ function mytheme_loop_add_to_cart_text($text, $product)
 add_filter('woocommerce_product_add_to_cart_text', 'mytheme_loop_add_to_cart_text', 10, 2);
 
 /**
+ * Screen reader label for the "Add" button must start with the visible word "Add"
+ * (WCAG label-in-name). WooCommerce's default for variable products is "Select options for …".
+ */
+function mytheme_loop_add_to_cart_description($description, $product)
+{
+	if (!$product->is_purchasable() || !$product->is_in_stock()) {
+		return $description;
+	}
+	/* translators: %s: product name */
+	$label = $product->is_type('simple') ? 'Add “%s” to your cart' : 'Add “%s”: choose options';
+	return sprintf($label, wp_strip_all_tags($product->get_name()));
+}
+add_filter('woocommerce_product_add_to_cart_description', 'mytheme_loop_add_to_cart_description', 10, 2);
+
+/**
  * Checkout: wrap the "Your order" heading, order table and payment in one container.
  */
 function mytheme_checkout_summary_open()
@@ -722,6 +751,8 @@ function mytheme_register_newsletter_cpt()
 		'show_in_menu' => true,
 		'menu_icon' => 'dashicons-email-alt',
 		'supports' => array('title'),
+		'capability_type' => array('newsletter_signup', 'newsletter_signups'),
+		'map_meta_cap' => true,
 	));
 }
 add_action('init', 'mytheme_register_newsletter_cpt');
@@ -1241,3 +1272,108 @@ function mytheme_enqueue_quiz()
 	));
 }
 add_action('wp_enqueue_scripts', 'mytheme_enqueue_quiz');
+
+/**
+ * ===== Roles (CRUD by role, as documented in the report) =====
+ * Administrator: full CRUD, users, plugins, settings (built-in role).
+ * Communication Officer: create/edit/publish/delete blog posts, site content, testimonials and products.
+ * Intern: read + create/edit own drafts (e.g. a blog post or site-content wording), cannot publish or delete.
+ * Visitors: only the public forms (contact, newsletter, comments).
+ * Site content, testimonials and products use the normal post capabilities.
+ * Bump the version to re-apply after changing capabilities.
+ */
+function mytheme_setup_roles()
+{
+	if (get_option('mytheme_roles_version') === '1') {
+		return;
+	}
+
+	$content_caps = array(
+		'read' => true,
+		'upload_files' => true,
+		'moderate_comments' => true,
+		'manage_categories' => true,
+		'edit_posts' => true,
+		'edit_others_posts' => true,
+		'edit_published_posts' => true,
+		'edit_private_posts' => true,
+		'read_private_posts' => true,
+		'publish_posts' => true,
+		'delete_posts' => true,
+		'delete_others_posts' => true,
+		'delete_published_posts' => true,
+		'delete_private_posts' => true,
+		// Product categories and tags (WooCommerce taxonomies).
+		'manage_product_terms' => true,
+		'edit_product_terms' => true,
+		'delete_product_terms' => true,
+		'assign_product_terms' => true,
+	);
+	remove_role('communication_officer');
+	add_role('communication_officer', 'Communication Officer', $content_caps);
+
+	remove_role('intern');
+	add_role('intern', 'Intern', array(
+		'read' => true,
+		'edit_posts' => true, // own drafts only: no publish, no delete, no editing others' or published work
+		'assign_product_terms' => true,
+	));
+
+	// Contact messages and newsletter sign-ups: administrators only.
+	$admin = get_role('administrator');
+	foreach (array('contact_message', 'newsletter_signup') as $type) {
+		foreach (array('edit_%ss', 'edit_others_%ss', 'edit_published_%ss', 'edit_private_%ss', 'publish_%ss', 'read_private_%ss', 'delete_%ss', 'delete_others_%ss', 'delete_published_%ss', 'delete_private_%ss') as $cap) {
+			$admin->add_cap(sprintf($cap, $type));
+		}
+	}
+
+	update_option('mytheme_roles_version', '1');
+}
+add_action('init', 'mytheme_setup_roles');
+
+/**
+ * ===== Performance =====
+ */
+
+// Connect to Google Fonts early, before the stylesheet asks for the font files.
+function mytheme_font_resource_hints($urls, $relation_type)
+{
+	if ($relation_type === 'preconnect') {
+		$urls[] = 'https://fonts.googleapis.com';
+		$urls[] = array('href' => 'https://fonts.gstatic.com', 'crossorigin');
+	}
+	return $urls;
+}
+add_filter('wp_resource_hints', 'mytheme_font_resource_hints', 10, 2);
+
+// The homepage hero is a CSS background, which the browser only finds after the CSS loads.
+// Preloading the first slide makes it the first image to download (it is the LCP element).
+function mytheme_preload_hero_image()
+{
+	if (!is_front_page()) {
+		return;
+	}
+	$site_content = get_posts(array('post_type' => 'site_content', 'posts_per_page' => 1, 'fields' => 'ids'));
+	if (empty($site_content)) {
+		return;
+	}
+	$slides = get_field('hero_slides', $site_content[0]);
+	$image = $slides ? $slides[0]['slide_image'] : get_field('hero_image', $site_content[0]);
+	if (empty($image)) {
+		return;
+	}
+	echo '<link rel="preload" as="image" href="' . esc_url($image['sizes']['large'] ?? $image['url']) . '" fetchpriority="high">' . "\n";
+}
+add_action('wp_head', 'mytheme_preload_hero_image', 1);
+
+// On the homepage every image sits below the full-screen hero: lazy-load them all,
+// and stop WordPress from giving the first bestseller "high" priority over the hero.
+function mytheme_front_page_lazy_images($attr)
+{
+	if (is_front_page()) {
+		$attr['loading'] = 'lazy';
+		unset($attr['fetchpriority']);
+	}
+	return $attr;
+}
+add_filter('wp_get_attachment_image_attributes', 'mytheme_front_page_lazy_images');

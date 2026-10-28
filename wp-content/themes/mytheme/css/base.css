@@ -7,7 +7,7 @@ Version: 1.0
 
 
 
-@import url('https://fonts.googleapis.com/css2?family=Stack+Sans+Text:wght@200..700&display=swap');
+/* Stack Sans Text is loaded in functions.php (mytheme_enqueue_assets) with preconnect, not @import: faster first paint. */
 
 :root {
 	/* Colors */
