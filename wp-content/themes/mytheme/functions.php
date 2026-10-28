@@ -317,7 +317,7 @@ function mytheme_product_schema()
 	if (!is_singular('product')) {
 		return;
 	}
-	$price = get_field('price');
+	$product = wc_get_product(get_the_ID());
 	$schema = array(
 		'@context' => 'https://schema.org',
 		'@type' => 'Product',
@@ -327,13 +327,16 @@ function mytheme_product_schema()
 		'offers' => array(
 			'@type' => 'Offer',
 			'priceCurrency' => 'DKK',
-			'price' => $price ?: '',
-			'availability' => 'https://schema.org/InStock',
+			'price' => $product ? $product->get_price() : '',
+			'availability' => ($product && $product->is_in_stock()) ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+			'url' => get_permalink(),
 		),
 	);
 	echo '<script type="application/ld+json">' . wp_json_encode($schema) . '</script>' . "\n";
 }
 add_action('wp_head', 'mytheme_product_schema');
+// WooCommerce prints its own Product schema too; keep only the theme's so each product page has one.
+add_filter('woocommerce_structured_data_product', '__return_empty_array');
 
 /**
  * Testimonial CPT — "What users think" section.
@@ -351,6 +354,8 @@ function mytheme_register_testimonial_cpt()
 		'show_in_menu' => true,
 		'menu_icon' => 'dashicons-format-quote',
 		'supports' => array('title', 'thumbnail'),
+		'capability_type' => array('testimonial', 'testimonials'),
+		'map_meta_cap' => true,
 	));
 }
 add_action('init', 'mytheme_register_testimonial_cpt');
@@ -370,6 +375,10 @@ function mytheme_register_site_content_cpt()
 		'show_in_menu' => true,
 		'menu_icon' => 'dashicons-admin-home',
 		'supports' => array('title'),
+		// Only administrators can add or delete entries; the Communication Officer can edit them.
+		'capability_type' => array('site_content', 'site_contents'),
+		'capabilities' => array('create_posts' => 'create_site_contents'),
+		'map_meta_cap' => true,
 	));
 }
 add_action('init', 'mytheme_register_site_content_cpt');
@@ -392,6 +401,9 @@ function mytheme_register_product_cpt()
 		'menu_icon' => 'dashicons-cart',
 		'has_archive' => true,
 		'supports' => array('title', 'thumbnail', 'editor'),
+		// Same capabilities WooCommerce uses for products (edit_products, publish_products, ...).
+		'capability_type' => 'product',
+		'map_meta_cap' => true,
 	));
 }
 add_action('init', 'mytheme_register_product_cpt');
@@ -415,6 +427,7 @@ function mytheme_register_contact_message_cpt()
 		'supports' => array('title', 'custom-fields'),
 		// Personal data: own capabilities so only administrators can see it (see mytheme_setup_roles).
 		'capability_type' => array('contact_message', 'contact_messages'),
+		'capabilities' => array('create_posts' => 'create_contact_messages'), // only the public form creates them
 		'map_meta_cap' => true,
 	));
 }
@@ -752,6 +765,7 @@ function mytheme_register_newsletter_cpt()
 		'menu_icon' => 'dashicons-email-alt',
 		'supports' => array('title'),
 		'capability_type' => array('newsletter_signup', 'newsletter_signups'),
+		'capabilities' => array('create_posts' => 'create_newsletter_signups'), // only the pop-up and quiz create them
 		'map_meta_cap' => true,
 	));
 }
@@ -1275,59 +1289,102 @@ add_action('wp_enqueue_scripts', 'mytheme_enqueue_quiz');
 
 /**
  * ===== Roles (CRUD by role, as documented in the report) =====
- * Administrator: full CRUD, users, plugins, settings (built-in role).
- * Communication Officer: create/edit/publish/delete blog posts, site content, testimonials and products.
- * Intern: read + create/edit own drafts (e.g. a blog post or site-content wording), cannot publish or delete.
- * Visitors: only the public forms (contact, newsletter, comments).
- * Site content, testimonials and products use the normal post capabilities.
+ *
+ * Object            | Administrator | Communication Officer | Intern            | Visitor
+ * Pages             | CRUD          | RU                    | R                 | R
+ * Blog posts        | CRUD          | CRUD                  | CRU (own drafts)  | R
+ * Site content      | CRUD          | RU                    | R                 | R
+ * Testimonials      | CRUD          | CRUD                  | R                 | R
+ * Products          | CRUD          | CRUD                  | R                 | R
+ * Contact messages  | CRUD          | R                     | -                 | C (form)
+ * Newsletter signups| CRUD          | R                     | -                 | C (form)
+ * Comments          | CRUD          | RUD                   | R                 | C, R
+ * Users / settings  | CRUD          | -                     | -                 | -
+ *
+ * Every custom post type has its own capabilities (see the register_post_type calls).
  * Bump the version to re-apply after changing capabilities.
  */
+function mytheme_roles_caps($type, $actions)
+{
+	$caps = array();
+	$map = array(
+		'C' => array('create_%s', 'edit_%s', 'publish_%s'),
+		'R' => array('read_private_%s'),
+		'U' => array('edit_%s', 'edit_others_%s', 'edit_published_%s', 'edit_private_%s'),
+		'D' => array('delete_%s', 'delete_others_%s', 'delete_published_%s', 'delete_private_%s'),
+	);
+	foreach (str_split($actions) as $action) {
+		foreach ($map[$action] as $cap) {
+			$caps[sprintf($cap, $type)] = true;
+		}
+	}
+	return $caps;
+}
+
 function mytheme_setup_roles()
 {
-	if (get_option('mytheme_roles_version') === '1') {
+	if (get_option('mytheme_roles_version') === '2') {
 		return;
 	}
 
-	$content_caps = array(
-		'read' => true,
-		'upload_files' => true,
-		'moderate_comments' => true,
-		'manage_categories' => true,
-		'edit_posts' => true,
-		'edit_others_posts' => true,
-		'edit_published_posts' => true,
-		'edit_private_posts' => true,
-		'read_private_posts' => true,
-		'publish_posts' => true,
-		'delete_posts' => true,
-		'delete_others_posts' => true,
-		'delete_published_posts' => true,
-		'delete_private_posts' => true,
-		// Product categories and tags (WooCommerce taxonomies).
-		'manage_product_terms' => true,
-		'edit_product_terms' => true,
-		'delete_product_terms' => true,
-		'assign_product_terms' => true,
-	);
+	// Administrator: full CRUD on the theme's own post types (WordPress/WooCommerce caps are already there).
+	$admin = get_role('administrator');
+	foreach (array('testimonials', 'site_contents', 'contact_messages', 'newsletter_signups', 'products') as $type) {
+		foreach (array_keys(mytheme_roles_caps($type, 'CRUD')) as $cap) {
+			$admin->add_cap($cap);
+		}
+	}
+
 	remove_role('communication_officer');
-	add_role('communication_officer', 'Communication Officer', $content_caps);
+	add_role('communication_officer', 'Communication Officer', array_merge(
+		array(
+			'read' => true,
+			'upload_files' => true,
+			'moderate_comments' => true, // comments: read, update, delete
+			'manage_categories' => true,
+			// Blog posts: CRUD (WordPress core capability names)
+			'edit_posts' => true,
+			'edit_others_posts' => true,
+			'edit_published_posts' => true,
+			'edit_private_posts' => true,
+			'read_private_posts' => true,
+			'publish_posts' => true,
+			'delete_posts' => true,
+			'delete_others_posts' => true,
+			'delete_published_posts' => true,
+			'delete_private_posts' => true,
+			// Pages: read + update
+			'edit_pages' => true,
+			'edit_others_pages' => true,
+			'edit_published_pages' => true,
+			'read_private_pages' => true,
+			// Product categories and tags
+			'manage_product_terms' => true,
+			'edit_product_terms' => true,
+			'delete_product_terms' => true,
+			'assign_product_terms' => true,
+			// Contact messages and newsletter sign-ups: read the list only (no opening, editing or deleting)
+			'edit_contact_messages' => true,
+			'edit_newsletter_signups' => true,
+		),
+		mytheme_roles_caps('testimonials', 'CRUD'),
+		mytheme_roles_caps('products', 'CRUD'),
+		array(
+			// Site content: read + update the existing entries
+			'edit_site_contents' => true,
+			'edit_others_site_contents' => true,
+			'edit_published_site_contents' => true,
+			'read_private_site_contents' => true,
+		)
+	));
 
 	remove_role('intern');
 	add_role('intern', 'Intern', array(
 		'read' => true,
-		'edit_posts' => true, // own drafts only: no publish, no delete, no editing others' or published work
-		'assign_product_terms' => true,
+		'edit_posts' => true, // blog posts: create + edit own drafts; cannot publish, delete or edit others' work
 	));
 
-	// Contact messages and newsletter sign-ups: administrators only.
-	$admin = get_role('administrator');
-	foreach (array('contact_message', 'newsletter_signup') as $type) {
-		foreach (array('edit_%ss', 'edit_others_%ss', 'edit_published_%ss', 'edit_private_%ss', 'publish_%ss', 'read_private_%ss', 'delete_%ss', 'delete_others_%ss', 'delete_published_%ss', 'delete_private_%ss') as $cap) {
-			$admin->add_cap(sprintf($cap, $type));
-		}
-	}
-
-	update_option('mytheme_roles_version', '1');
+	update_option('mytheme_roles_version', '2');
 }
 add_action('init', 'mytheme_setup_roles');
 
