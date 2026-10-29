@@ -202,7 +202,7 @@ add_action('wp_enqueue_scripts', 'mytheme_enqueue_assets');
 function mytheme_custom_title($title_parts)
 {
 	if (is_front_page()) {
-		$title_parts['title'] = 'glam — Cruelty-Free Beauty & Skincare, Denmark';
+		$title_parts['title'] = 'glam — Cruelty-Free Makeup, Denmark';
 		unset($title_parts['site']);
 	} elseif (is_page('contact-us')) {
 		$title_parts['title'] = 'Contact Us — Cruelty-Free Beauty Support';
@@ -223,7 +223,7 @@ add_filter('document_title_parts', 'mytheme_custom_title');
 function mytheme_meta_description()
 {
 	if (is_front_page()) {
-		$desc = 'glam is a curated online beauty shop in Denmark offering cruelty-free, sustainable makeup and skincare from trusted, hand-picked brands.';
+		$desc = 'glam is a curated online beauty shop in Denmark offering cruelty-free, sustainable makeup and beauty tools from trusted, hand-picked brands.';
 	} elseif (is_page('contact-us')) {
 		$desc = 'Get in touch with the glam team — questions, recommendations or feedback about our cruelty-free beauty products. We would love to hear from you.';
 	} elseif (is_page('front-blog')) {
@@ -250,7 +250,7 @@ function mytheme_meta_description()
 		$desc = get_bloginfo('description');
 	}
 	if (!$desc) {
-		$desc = 'glam is a curated online beauty shop in Denmark offering cruelty-free, sustainable makeup and skincare from trusted, hand-picked brands.';
+		$desc = 'glam is a curated online beauty shop in Denmark offering cruelty-free, sustainable makeup and beauty tools from trusted, hand-picked brands.';
 	}
 	echo '<meta name="description" content="' . esc_attr($desc) . '">' . "\n";
 }

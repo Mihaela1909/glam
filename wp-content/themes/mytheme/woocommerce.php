@@ -4,7 +4,7 @@
     <section class="shop-banner">
         <div class="shop-banner-text">
             <h1 class="shop-title">Shop all products</h1>
-            <p class="shop-description">Choose from a curated range of makeup, skincare and hair care.</p>
+            <p class="shop-description">Choose from a curated range of cruelty-free makeup and brushes.</p>
         </div>
         <img src="<?php echo esc_url(get_theme_file_uri('assets/shop-hero.webp')); ?>" alt="Makeup products spread out on a plum background">
     </section>
